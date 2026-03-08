@@ -5,7 +5,8 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import com.example.smartgain.R
+import androidx.fragment.app.viewModels
+import com.example.smartgain.databinding.FragmentOverviewBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -22,6 +23,11 @@ class OverviewFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
 
+    private var _binding: FragmentOverviewBinding? = null
+    private val binding get() = _binding!!
+
+    private val viewModel: OverviewViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -35,7 +41,30 @@ class OverviewFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_overview, container, false)
+        _binding = FragmentOverviewBinding.inflate(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        // 觀察營收：更新嵌入佈局 (layoutSummary) 中的文字
+        viewModel.revenue.observe(viewLifecycleOwner) { total ->
+            binding.layoutSummary.tvRevenue.text = "$$total"
+        }
+
+        // 觀察待處理數量
+        viewModel.pendingCount.observe(viewLifecycleOwner) { count ->
+            binding.layoutSummary.tvPendingCount.text = count.toString()
+        }
+
+        // 觸發抓取資料
+        viewModel.fetchTodaySummary()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     companion object {
