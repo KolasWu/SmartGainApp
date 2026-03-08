@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    android:layout_margin="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="今日概況"
+            android:textStyle="bold"
+            android:textSize="16sp" />
+
+        <GridLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:columnCount="3"
+            android:layout_marginTop="12dp">
+
+            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:gravity="center">
+                <TextView
+                    android:text="今日營收"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+                <TextView
+                    android:id="@+id/tv_revenue"
+                    android:text="$0"
+                    android:textStyle="bold"
+                    android:textColor="#4CAF50"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+            </LinearLayout>
+
+            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:gravity="center">
+                <TextView
+                    android:text="待處理"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+                <TextView
+                    android:id="@+id/tv_pending_count"
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+            </LinearLayout>
+
+            <LinearLayout android:orientation="vertical" android:layout_columnWeight="1" android:gravity="center">
+                <TextView
+                    android:text="庫存警告"
+                    android:textSize="12sp"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+                <TextView
+                    android:id="@+id/tv_stock_warning"
+                    android:text="0"
+                    android:textStyle="bold"
+                    android:textColor="#F44336"
+                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"/>
+            </LinearLayout>
+        </GridLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>
