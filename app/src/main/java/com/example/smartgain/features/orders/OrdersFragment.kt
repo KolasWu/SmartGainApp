@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import com.example.smartgain.R
+import com.example.smartgain.databinding.FragmentOrdersBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -17,8 +19,9 @@ private const val ARG_PARAM2 = "param2"
  * Use the [OrdersFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class OrdersFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+class OrdersFragment : Fragment(R.layout.fragment_orders) {
+    private val viewModel: OrdersViewModel by viewModels()
+    private lateinit var adapter: OrderAdapter
     private var param1: String? = null
     private var param2: String? = null
 
@@ -36,6 +39,22 @@ class OrdersFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_orders, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentOrdersBinding.bind(view)
+
+        // 初始化 Adapter
+        adapter = OrderAdapter(emptyList())
+        binding.rvOrders.adapter = adapter
+
+        // 觀察資料變化
+        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
+            adapter.updateData(orderList)
+        }
+
+        viewModel.fetchOrders()
     }
 
     companion object {
