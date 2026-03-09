@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.smartgain.R
+import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -53,6 +54,29 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         }
 
         viewModel.fetchProducts()
+
+        binding.fabAddProduct.setOnClickListener {
+            showAddProductDialog()
+        }
+    }
+
+    private fun showAddProductDialog() {
+        val dialogBinding = DialogAddProductBinding.inflate(layoutInflater)
+
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("新增商品")
+            .setView(dialogBinding.root)
+            .setPositiveButton("新增") { _, _ ->
+                val name = dialogBinding.etName.text.toString()
+                val price = dialogBinding.etPrice.text.toString().toIntOrNull() ?: 0
+                val stock = dialogBinding.etStock.text.toString().toIntOrNull() ?: 0
+
+                if (name.isNotEmpty()) {
+                    viewModel.addProduct(name, price, stock)
+                }
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
     companion object {
         /**

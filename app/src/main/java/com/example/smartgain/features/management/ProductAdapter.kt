@@ -1,5 +1,6 @@
 package com.example.smartgain.features.management
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -31,6 +32,12 @@ class ProductAdapter(private var products: List<Product>) :
             binding.tvProductName.text = product.name
             binding.tvProductStock.text = "庫存：${product.stock}"
             binding.tvProductPrice.text = "$${product.price}"
+            binding.tvProductStock.text = "庫存：${product.stock}"
+            if (product.stock < 5) {
+                binding.tvProductStock.setTextColor(Color.RED)
+            } else {
+                binding.tvProductStock.setTextColor(Color.GRAY)
+            }
         }
     }
 }

@@ -18,4 +18,15 @@ class ManagementViewModel : ViewModel() {
             }
         }
     }
+
+    fun addProduct(name: String, price: Int, stock: Int) {
+        val newDoc = db.collection("products").document() // 自動生成文件 ID
+        val product = Product(
+            productId = newDoc.id,
+            name = name,
+            price = price,
+            stock = stock
+        )
+        newDoc.set(product) // 寫入 Firebase
+    }
 }
