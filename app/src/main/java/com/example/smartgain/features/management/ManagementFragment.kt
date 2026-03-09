@@ -5,7 +5,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.fragment.app.viewModels
 import com.example.smartgain.R
+import com.example.smartgain.databinding.FragmentManagementBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -17,8 +19,9 @@ private const val ARG_PARAM2 = "param2"
  * Use the [ManagementFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class ManagementFragment : Fragment() {
-    // TODO: Rename and change types of parameters
+class ManagementFragment : Fragment(R.layout.fragment_management) {
+    private val viewModel: ManagementViewModel by viewModels()
+    private lateinit var adapter: ProductAdapter
     private var param1: String? = null
     private var param2: String? = null
 
@@ -38,6 +41,19 @@ class ManagementFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_management, container, false)
     }
 
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        val binding = FragmentManagementBinding.bind(view)
+
+        adapter = ProductAdapter(emptyList())
+        binding.rvProducts.adapter = adapter
+
+        viewModel.products.observe(viewLifecycleOwner) { list ->
+            adapter.updateData(list)
+        }
+
+        viewModel.fetchProducts()
+    }
     companion object {
         /**
          * Use this factory method to create a new instance of

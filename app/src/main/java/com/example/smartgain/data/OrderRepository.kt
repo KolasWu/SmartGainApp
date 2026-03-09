@@ -9,4 +9,8 @@ class OrderRepository {
     // 取得所有訂單，並按時間排序
     fun getOrdersQuery() = db.collection("orders")
         .orderBy("timestamp", Query.Direction.DESCENDING)
+
+    // --- 新增：商品查詢 ---
+    fun getProductsQuery() = db.collection("products")
+        .orderBy("name", Query.Direction.ASCENDING) // 按名稱 A-Z 排序
 }
