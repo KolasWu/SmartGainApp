@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.smartgain.R
+import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
 
@@ -46,7 +47,9 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentManagementBinding.bind(view)
 
-        adapter = ProductAdapter(emptyList())
+        adapter = ProductAdapter(emptyList()) { product ->
+            showDeleteConfirmDialog(product)
+        }
         binding.rvProducts.adapter = adapter
 
         viewModel.products.observe(viewLifecycleOwner) { list ->
@@ -58,6 +61,17 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         binding.fabAddProduct.setOnClickListener {
             showAddProductDialog()
         }
+    }
+
+    private fun showDeleteConfirmDialog(product: Product) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("刪除商品")
+            .setMessage("確定要刪除「${product.name}」嗎？此動作無法復原。")
+            .setPositiveButton("確定刪除") { _, _ ->
+                viewModel.deleteProduct(product.productId)
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showAddProductDialog() {

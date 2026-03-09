@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import com.example.smartgain.R
 import com.example.smartgain.databinding.FragmentOrdersBinding
+import com.example.smartgain.features.ordersimport.OrdersViewModel
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER

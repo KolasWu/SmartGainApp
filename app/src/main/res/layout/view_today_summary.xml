@@ -63,7 +63,7 @@
                     android:layout_height="wrap_content"
                     android:layout_width="match_parent"/>
                 <TextView
-                    android:id="@+id/tv_stock_warning"
+                    android:id="@+id/tv_low_stock"
                     android:text="0"
                     android:textStyle="bold"
                     android:textColor="#F44336"

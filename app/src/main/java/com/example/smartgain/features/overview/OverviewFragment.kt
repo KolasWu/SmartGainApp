@@ -48,17 +48,35 @@ class OverviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 觀察營收：更新嵌入佈局 (layoutSummary) 中的文字
+        // 觀察營收與待處理量
         viewModel.revenue.observe(viewLifecycleOwner) { total ->
             binding.layoutSummary.tvRevenue.text = "$$total"
         }
 
-        // 觀察待處理數量
         viewModel.pendingCount.observe(viewLifecycleOwner) { count ->
             binding.layoutSummary.tvPendingCount.text = count.toString()
         }
 
-        // 觸發抓取資料
+        // 觀察庫存警告數字
+        viewModel.lowStockCount.observe(viewLifecycleOwner) { count ->
+            binding.layoutSummary.tvLowStock.text = count.toString()
+        }
+
+        // 新增：觀察庫存不足清單並更新「最近動態」
+        viewModel.lowStockProducts.observe(viewLifecycleOwner) { products ->
+            if (products.isEmpty()) {
+                binding.tvRecentActivity.text = "目前沒有特別動態"
+                binding.tvRecentActivity.setTextColor(android.graphics.Color.GRAY)
+            } else {
+                // 組合警告文字
+                val warningText = products.joinToString("\n") { p ->
+                    "⚠️ 警告：${p.name} 庫存僅剩 ${p.stock} 件！"
+                }
+                binding.tvRecentActivity.text = warningText
+                binding.tvRecentActivity.setTextColor(android.graphics.Color.RED)
+            }
+        }
+
         viewModel.fetchTodaySummary()
     }
 
@@ -66,6 +84,7 @@ class OverviewFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
 
     companion object {
         /**

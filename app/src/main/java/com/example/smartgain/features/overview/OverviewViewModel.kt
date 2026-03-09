@@ -5,10 +5,12 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
+import com.example.smartgain.data.Product
 
 class OverviewViewModel : ViewModel() {
     private val repository = OrderRepository()
 
+    //營收與訂單
     private val _revenue = MutableLiveData<Int>(0)
     val revenue: LiveData<Int> = _revenue
 
@@ -16,19 +18,33 @@ class OverviewViewModel : ViewModel() {
     val pendingCount: LiveData<Int> = _pendingCount
 
     fun fetchTodaySummary() {
-        // 監聽 Firestore 訂單集合
-        repository.getOrdersQuery().addSnapshotListener { snapshot, e ->
-            if (e != null || snapshot == null) return@addSnapshotListener
+        // 監聽訂單以計算營收與待處理
+        repository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
+            snapshot?.let {
+                val orders = it.toObjects(Order::class.java)
+                _revenue.value = orders.filter { o -> o.status == "DONE" }.sumOf { o -> o.totalPrice }
+                _pendingCount.value = orders.count { o -> o.status == "NEW" }
+            }
+        }
 
-            val orders = snapshot.toObjects(Order::class.java)
+        // 監聽商品以更新庫存警告
+        repository.getProductsQuery().addSnapshotListener { snapshot, _ ->
+            snapshot?.let {
+                val allProducts = it.toObjects(Product::class.java)
 
-            // 計算今日營收 (total_price)
-            val total = orders.sumOf { it.totalPrice }
-            // 計算狀態為 NEW 的訂單數量
-            val pending = orders.count { it.status == "NEW" }
+                // 過濾出庫存 <= 5 的商品
+                val lowStockList = allProducts.filter { p -> p.stock <= 5 }
 
-            _revenue.value = total
-            _pendingCount.value = pending
+                _lowStockCount.value = lowStockList.size
+                _lowStockProducts.value = lowStockList
+            }
         }
     }
+
+    // 庫存相關
+
+    private val _lowStockCount = MutableLiveData<Int>(0) // 修正：新增這個變數定義
+    val lowStockCount: LiveData<Int> = _lowStockCount
+    private val _lowStockProducts = MutableLiveData<List<Product>>()
+    val lowStockProducts: LiveData<List<Product>> = _lowStockProducts
 }

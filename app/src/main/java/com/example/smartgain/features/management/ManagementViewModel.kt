@@ -3,16 +3,17 @@ package com.example.smartgain.features.management
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
 import com.google.firebase.firestore.FirebaseFirestore
 
 class ManagementViewModel : ViewModel() {
-    private val db = FirebaseFirestore.getInstance()
+    private val repository = OrderRepository()
     private val _products = MutableLiveData<List<Product>>()
     val products: LiveData<List<Product>> = _products
 
     fun fetchProducts() {
-        db.collection("products").addSnapshotListener { snapshot, _ ->
+        repository.getProductsQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 _products.value = it.toObjects(Product::class.java)
             }
@@ -20,13 +21,16 @@ class ManagementViewModel : ViewModel() {
     }
 
     fun addProduct(name: String, price: Int, stock: Int) {
-        val newDoc = db.collection("products").document() // 自動生成文件 ID
         val product = Product(
-            productId = newDoc.id,
+            productId = "", // 傳空，交給 Repository 處理 ID
             name = name,
             price = price,
             stock = stock
         )
-        newDoc.set(product) // 寫入 Firebase
+        repository.addProduct(product)
+    }
+
+    fun deleteProduct(productId: String) {
+        repository.deleteProduct(productId)
     }
 }
