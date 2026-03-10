@@ -1,4 +1,4 @@
-package com.example.smartgain.features.overviewimport
+package com.example.smartgain.features.overview
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,10 +6,10 @@ import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
-import com.example.smartgain.data.ProductRepository // 1. 補上 ProductRepository 的導入
+import com.example.smartgain.data.ProductRepository
 
 class OverviewViewModel : ViewModel() {
-    // 2. 拆分為兩個專門的 Repository
+    // 拆分為兩個專門的 Repository
     private val orderRepository = OrderRepository()
     private val productRepository = ProductRepository()
 
@@ -25,12 +25,14 @@ class OverviewViewModel : ViewModel() {
         orderRepository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val orders = it.toObjects(Order::class.java)
-                _revenue.value = orders.filter { o -> o.status == "DONE" }.sumOf { o -> o.totalPrice }
+                // 修正：這裡原本過濾了 status == "DONE"，導致新訂單(NEW)的金額沒被計入營收。
+                // 如果你想看目前所有訂單的總額，應移除過濾；或視需求調整狀態。
+                _revenue.value = orders.sumOf { o -> o.totalPrice }
                 _pendingCount.value = orders.count { o -> o.status == "NEW" }
             }
         }
 
-        // 監聽商品以更新庫存警告 (修正點：這裡改用 productRepository)
+        // 監聽商品以更新庫存警告
         productRepository.getProductsQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val allProducts = it.toObjects(Product::class.java)
@@ -45,7 +47,7 @@ class OverviewViewModel : ViewModel() {
     }
 
     // 庫存相關
-    private val _lowStockCount = MutableLiveData<Int>(0) // 修正：新增這個變數定義
+    private val _lowStockCount = MutableLiveData<Int>(0)
     val lowStockCount: LiveData<Int> = _lowStockCount
     private val _lowStockProducts = MutableLiveData<List<Product>>()
     val lowStockProducts: LiveData<List<Product>> = _lowStockProducts

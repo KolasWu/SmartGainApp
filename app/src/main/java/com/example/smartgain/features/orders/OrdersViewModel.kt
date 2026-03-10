@@ -3,6 +3,7 @@ package com.example.smartgain.features.orders // 1. 修正 package 名稱
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.smartgain.data.CartItem
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
@@ -18,8 +19,8 @@ class OrdersViewModel : ViewModel() {
     private val _lowStockCount = MutableLiveData<Int>()
     val lowStockCount: LiveData<Int> = _lowStockCount
 
-    private val _productList = MutableLiveData<List<Product>>()
-    val productList: LiveData<List<Product>> = _productList
+    private val _products = MutableLiveData<List<Product>>()
+    val products: LiveData<List<Product>> = _products
 
     // 監聽訂單數據
     fun fetchOrders() {
@@ -44,34 +45,40 @@ class OrdersViewModel : ViewModel() {
     }
 
     // 抓取商品供選單使用
-    fun fetchProductsForOrder() {
+    fun fetchProducts() {
         productRepository.getProductsQuery().get().addOnSuccessListener { snapshot ->
-            _productList.value = snapshot.toObjects(Product::class.java)
+            _products.value = snapshot.toObjects(Product::class.java)
         }
     }
 
-    // 核心邏輯：手動下單
-    fun createManualOrder(product: Product, quantity: Int, onWarning: (String) -> Unit) {
-        if (quantity > product.stock) {
-            onWarning("錯誤：下單數量不能超過庫存 (${product.stock})")
-            return
-        }
-        if (product.stock - quantity < 5) {
-            onWarning("警告：庫存即將低於 5 個！")
-        }
+    fun executeBatchOrder(cartList: List<CartItem>, onWarning: (String) -> Unit) {
+        if (cartList.isEmpty()) return
 
+        // 1. 計算整張訂單的總金額
+        val totalAmount = cartList.sumOf { it.subtotal }
+
+        // 2. 建立一筆總體訂單
         val newOrder = Order(
             orderId = "",
-            buyerName = "手動 Key 單",
-            totalPrice = product.price * quantity,
+            buyerName = "手動 Key 單", // 或是讓使用者輸入姓名
+            totalPrice = totalAmount,
             status = "NEW",
             timestamp = System.currentTimeMillis()
         )
-
-        // 2. 確保 OrderRepository 有 addOrder
         orderRepository.addOrder(newOrder)
 
-        // 3. 確保 ProductRepository 有 updateStock
-        productRepository.updateStock(product.productId, product.stock - quantity)
+        // 3. 逐一處理庫存扣除與警示
+        cartList.forEach { item ->
+            val remaining = item.stock - item.quantity
+
+            // 觸發低庫存警示
+            if (remaining < 5) {
+                onWarning("商品 [${item.name}] 下單後庫存剩餘 $remaining，請注意補貨！")
+            }
+
+            // 呼叫 ProductRepository 更新該商品的剩餘數量
+            // 這裡我們直接傳入 productId 和新庫存量
+            productRepository.updateStock(item.productId, remaining)
+        }
     }
 }
