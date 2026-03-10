@@ -9,7 +9,8 @@ import com.example.smartgain.databinding.ItemProductBinding
 
 class ProductAdapter(
     private var products: List<Product>,
-    private val onLongClick: (Product) -> Unit // 新增長按回調
+    private val onLongClick: (Product) -> Unit, // 長按回調
+    private val onClick: (Product) -> Unit // 點擊回調
 ) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
@@ -20,6 +21,11 @@ class ProductAdapter(
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         val product = products[position]
         holder.bind(product)
+
+        // 設定一般點擊 -> 觸發編輯
+        holder.itemView.setOnClickListener {
+            onClick(product)
+        }
 
         // 設定長按監聽
         holder.itemView.setOnLongClickListener {

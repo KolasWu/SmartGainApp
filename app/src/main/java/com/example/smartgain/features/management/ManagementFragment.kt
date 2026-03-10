@@ -11,17 +11,11 @@ import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
-
-/**
- * A simple [Fragment] subclass.
- * Use the [ManagementFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
 class ManagementFragment : Fragment(R.layout.fragment_management) {
+
+    //確保 ViewModel 存活在記憶體中，讓你的資料在旋轉後依然存在
     private val viewModel: ManagementViewModel by viewModels()
     private lateinit var adapter: ProductAdapter
     private var param1: String? = null
@@ -35,6 +29,7 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         }
     }
 
+    //只負責把 XML 充氣成 View
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -43,23 +38,28 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         return inflater.inflate(R.layout.fragment_management, container, false)
     }
 
+    //View 已經準備好、可以安全操作元件
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val binding = FragmentManagementBinding.bind(view)
 
-        adapter = ProductAdapter(emptyList()) { product ->
-            showDeleteConfirmDialog(product)
-        }
+        adapter = ProductAdapter(
+            emptyList(),
+            onLongClick = { product -> showDeleteConfirmDialog(product) },
+            onClick = { product -> showProductDialog(product) })
         binding.rvProducts.adapter = adapter
 
+        //觀察資料庫商品狀態並更新adapter
         viewModel.products.observe(viewLifecycleOwner) { list ->
             adapter.updateData(list)
         }
 
+        //取得商品
         viewModel.fetchProducts()
 
+        //新增商品按鈕
         binding.fabAddProduct.setOnClickListener {
-            showAddProductDialog()
+            showProductDialog()
         }
     }
 
@@ -74,34 +74,39 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
             .show()
     }
 
-    private fun showAddProductDialog() {
+    private fun showProductDialog(product: Product? = null) {
         val dialogBinding = DialogAddProductBinding.inflate(layoutInflater)
+        val isEdit = product != null
+
+        // 如果是編輯模式，先預填資料
+        if (isEdit) {
+            dialogBinding.etName.setText(product?.name)
+            dialogBinding.etPrice.setText(product?.price.toString())
+            dialogBinding.etStock.setText(product?.stock.toString())
+        }
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("新增商品")
+            .setTitle(if (isEdit) "編輯商品" else "新增商品")
             .setView(dialogBinding.root)
-            .setPositiveButton("新增") { _, _ ->
+            .setPositiveButton(if (isEdit) "儲存修改" else "新增") { _, _ ->
                 val name = dialogBinding.etName.text.toString()
                 val price = dialogBinding.etPrice.text.toString().toIntOrNull() ?: 0
                 val stock = dialogBinding.etStock.text.toString().toIntOrNull() ?: 0
 
                 if (name.isNotEmpty()) {
-                    viewModel.addProduct(name, price, stock)
+                    if (isEdit) {
+                        // 呼叫更新
+                        viewModel.updateProduct(product!!.productId, name, price, stock)
+                    } else {
+                        // 呼叫新增
+                        viewModel.addProduct(name, price, stock)
+                    }
                 }
             }
             .setNegativeButton("取消", null)
             .show()
     }
     companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ManagementFragment.
-         */
-        // TODO: Rename and change types and number of parameters
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             ManagementFragment().apply {

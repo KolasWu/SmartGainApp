@@ -5,7 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
-import com.google.firebase.firestore.FirebaseFirestore
 
 class ManagementViewModel : ViewModel() {
     private val repository = OrderRepository()
@@ -32,5 +31,15 @@ class ManagementViewModel : ViewModel() {
 
     fun deleteProduct(productId: String) {
         repository.deleteProduct(productId)
+    }
+
+    fun updateProduct(id: String, name: String, price: Int, stock: Int) {
+        val product = Product(
+            productId = id, // 傳入現有的 ID，Repository 就會執行「覆蓋」動作
+            name = name,
+            price = price,
+            stock = stock
+        )
+        repository.addProduct(product)
     }
 }
