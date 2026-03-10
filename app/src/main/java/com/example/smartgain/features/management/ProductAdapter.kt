@@ -34,6 +34,7 @@ class ProductAdapter(
         }
     }
 
+    // 告訴系統總共有幾件貨物
     override fun getItemCount() = products.size
 
     @SuppressLint("NotifyDataSetChanged")

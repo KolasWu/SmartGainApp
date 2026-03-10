@@ -14,30 +14,16 @@ class OrderRepository {
         .collection("orders")
         .orderBy("timestamp", Query.Direction.DESCENDING)
 
-    // 取得商品，並按名稱排序
-    fun getProductsQuery() = db
-        .collection("products")
-        .orderBy("name", Query.Direction.ASCENDING) // 按名稱 A-Z 排序
 
-    // 新增產品 upsert = update or insert
-    fun addProduct(product: Product) {
-        // 如果 productId 為空，讓 Firestore 自動生成 ID
-        val docRef = if (product.productId.isEmpty()) { db
-            .collection("products")
-            .document()
-        } else { db
-            .collection("products")
-            .document(product.productId)
+    //新增訂單
+    fun addOrder(order: Order) {
+        val docRef = if (order.orderId.isEmpty()) {
+            db.collection("orders").document() // 自動生成訂單 ID
+        } else {
+            db.collection("orders").document(order.orderId)
         }
 
-        // 更新物件內的 ID 並寫入
-        val finalProduct = product.copy(productId = docRef.id)
-        docRef.set(finalProduct)
-    }
-
-    fun deleteProduct(productId: String) { db
-        .collection("products")
-        .document(productId)
-        .delete()
+        val finalOrder = order.copy(orderId = docRef.id)
+        docRef.set(finalOrder)
     }
 }

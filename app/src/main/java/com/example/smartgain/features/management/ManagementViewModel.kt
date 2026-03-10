@@ -1,17 +1,20 @@
-package com.example.smartgain.features.management
+package com.example.smartgain.features.managementimport
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
+import com.example.smartgain.data.ProductRepository // 修正：改為導入 ProductRepository
 
 class ManagementViewModel : ViewModel() {
-    private val repository = OrderRepository()
+    // 修正：這裡應該改用 ProductRepository 而非 OrderRepository
+    private val repository = ProductRepository()
+
     private val _products = MutableLiveData<List<Product>>()
     val products: LiveData<List<Product>> = _products
 
     fun fetchProducts() {
+        // 修正：現在由 ProductRepository 負責提供產品查詢
         repository.getProductsQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 _products.value = it.toObjects(Product::class.java)

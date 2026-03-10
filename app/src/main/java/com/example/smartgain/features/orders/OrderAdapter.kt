@@ -11,19 +11,22 @@ import com.example.smartgain.databinding.ItemOrderBinding
 class OrderAdapter(private var orders: List<Order>) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
     // 建立 ViewHolder，綁定每一列的 XML
+    // 準備格子
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val binding = ItemOrderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return OrderViewHolder(binding)
     }
 
     // 把資料塞進對應的元件中
+    // 資料放進格子
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         holder.bind(orders[position])
     }
 
+    // 告訴系統總共有幾件貨物
     override fun getItemCount(): Int = orders.size
 
-    // 當有新資料時，用來更新清單的方法
+    // 當有新資料時更新清單
     fun updateData(newOrders: List<Order>) {
         this.orders = newOrders
         notifyDataSetChanged()

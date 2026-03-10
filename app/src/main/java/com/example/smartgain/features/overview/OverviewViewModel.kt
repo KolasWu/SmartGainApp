@@ -1,4 +1,4 @@
-package com.example.smartgain.features.overview
+package com.example.smartgain.features.overviewimport
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -6,9 +6,12 @@ import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
+import com.example.smartgain.data.ProductRepository // 1. 補上 ProductRepository 的導入
 
 class OverviewViewModel : ViewModel() {
-    private val repository = OrderRepository()
+    // 2. 拆分為兩個專門的 Repository
+    private val orderRepository = OrderRepository()
+    private val productRepository = ProductRepository()
 
     //營收與訂單
     private val _revenue = MutableLiveData<Int>(0)
@@ -18,8 +21,8 @@ class OverviewViewModel : ViewModel() {
     val pendingCount: LiveData<Int> = _pendingCount
 
     fun fetchTodaySummary() {
-        // 監聽訂單以計算營收與待處理
-        repository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
+        // 監聽訂單以計算營收與待處理 (使用 orderRepository)
+        orderRepository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val orders = it.toObjects(Order::class.java)
                 _revenue.value = orders.filter { o -> o.status == "DONE" }.sumOf { o -> o.totalPrice }
@@ -27,8 +30,8 @@ class OverviewViewModel : ViewModel() {
             }
         }
 
-        // 監聽商品以更新庫存警告
-        repository.getProductsQuery().addSnapshotListener { snapshot, _ ->
+        // 監聽商品以更新庫存警告 (修正點：這裡改用 productRepository)
+        productRepository.getProductsQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val allProducts = it.toObjects(Product::class.java)
 
@@ -42,7 +45,6 @@ class OverviewViewModel : ViewModel() {
     }
 
     // 庫存相關
-
     private val _lowStockCount = MutableLiveData<Int>(0) // 修正：新增這個變數定義
     val lowStockCount: LiveData<Int> = _lowStockCount
     private val _lowStockProducts = MutableLiveData<List<Product>>()

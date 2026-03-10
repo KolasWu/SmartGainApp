@@ -10,6 +10,7 @@ import com.example.smartgain.R
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
+import com.example.smartgain.features.managementimport.ManagementViewModel
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
