@@ -35,7 +35,7 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
             orderAdapter.updateData(orderList)
         }
 
-        // 3. 設定「新增訂單」按鈕（假設你在 xml 裡有一個 id 為 fabAddOrder 的按鈕）
+        // 3. 設定「新增訂單」按鈕
         binding.fabAddOrder.setOnClickListener {
             showManualOrderDialog()
         }
@@ -68,7 +68,7 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
                 override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
         }
-        viewModel.fetchProducts() // 記得在 ViewModel 寫這個方法來抓商品
+        viewModel.fetchProducts()
 
         // C. 「加入清單」按鈕邏輯
         dialogBinding.btnAddItem.setOnClickListener {
@@ -96,7 +96,6 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
 
             cartAdapter.notifyDataSetChanged()
             dialogBinding.etQuantity.text?.clear()
-            // 手動觸發一次總金額更新
             val total = cartList.sumOf { it.subtotal }
             dialogBinding.tvTotalAmount.text = "總計：$$total"
         }
@@ -107,7 +106,13 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
             .setView(dialogBinding.root)
             .setPositiveButton("確認下單") { _, _ ->
                 if (cartList.isNotEmpty()) {
-                    showFinalConfirmation(cartList)
+                    // 新增：抓取買家名稱 (從你剛才在 XML 新增的 etBuyerName)
+                    val buyerName = dialogBinding.etBuyerName.text.toString()
+
+                    // 這裡預設為 "H" (手動)，若你有加 RadioGroup 則可動態判斷
+                    val prefix = "H"
+
+                    showFinalConfirmation(cartList, buyerName, prefix)
                 } else {
                     Toast.makeText(context, "清單是空的！", Toast.LENGTH_SHORT).show()
                 }
@@ -116,13 +121,15 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
             .show()
     }
 
-    private fun showFinalConfirmation(cartList: List<CartItem>) {
+    // 更新：加入 buyerName 與 prefix 的傳遞
+    private fun showFinalConfirmation(cartList: List<CartItem>, buyerName: String, prefix: String) {
         val total = cartList.sumOf { it.subtotal }
         AlertDialog.Builder(requireContext())
             .setTitle("最後確認")
-            .setMessage("確認建立這筆訂單嗎？總金額：$$total")
+            .setMessage("確認建立這筆訂單嗎？\n買家：${if(buyerName.isBlank()) "一般散客" else buyerName}\n總金額：$$total")
             .setPositiveButton("送出") { _, _ ->
-                viewModel.executeBatchOrder(cartList) { warning ->
+                // 呼叫 ViewModel 更新後的方法
+                viewModel.executeBatchOrder(cartList, buyerName, prefix) { warning ->
                     Toast.makeText(context, warning, Toast.LENGTH_LONG).show()
                 }
             }

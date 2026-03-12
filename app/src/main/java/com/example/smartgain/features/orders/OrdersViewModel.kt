@@ -8,6 +8,9 @@ import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class OrdersViewModel : ViewModel() {
     private val orderRepository = OrderRepository()
@@ -51,16 +54,42 @@ class OrdersViewModel : ViewModel() {
         }
     }
 
-    fun executeBatchOrder(cartList: List<CartItem>, onWarning: (String) -> Unit) {
+    /**
+     * 新增：生成訂單編號邏輯
+     * 規則：前綴 + yyyyMMdd + 三位序號 (例如 H20260312001)
+     */
+    private fun generateOrderNumber(prefix: String): String {
+        val sdf = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+        val todayStr = sdf.format(Date())
+
+        // 隨日重新從 1 開始計算：過濾出今天且符合該前綴的訂單數量
+        val todayCount = _orders.value?.count {
+            it.orderId.contains(todayStr) && it.orderId.startsWith(prefix)
+        } ?: 0
+
+        val sequence = String.format("%03d", todayCount + 1)
+        return "$prefix$todayStr$sequence"
+    }
+
+    // 更新：加入 buyerName 與 prefix 參數
+    fun executeBatchOrder(
+        cartList: List<CartItem>,
+        buyerName: String,
+        prefix: String,
+        onWarning: (String) -> Unit
+    ) {
         if (cartList.isEmpty()) return
 
         // 1. 計算整張訂單的總金額
         val totalAmount = cartList.sumOf { it.subtotal }
 
+        // 新增：根據規則生成自動編號
+        val customOrderId = generateOrderNumber(prefix)
+
         // 2. 建立一筆總體訂單
         val newOrder = Order(
-            orderId = "",
-            buyerName = "手動 Key 單", // 或是讓使用者輸入姓名
+            orderId = customOrderId, // 使用自動生成的編號
+            buyerName = if (buyerName.isBlank()) "一般散客" else buyerName, // 或是讓使用者輸入姓名
             totalPrice = totalAmount,
             status = "NEW",
             timestamp = System.currentTimeMillis()
