@@ -54,6 +54,10 @@ class OrdersViewModel : ViewModel() {
         }
     }
 
+    fun deleteOrder(orderId: String) {
+        orderRepository.deleteOrder(orderId)
+    }
+
     /**
      * 新增：生成訂單編號邏輯
      * 規則：前綴 + yyyyMMdd + 三位序號 (例如 H20260312001)
@@ -71,7 +75,7 @@ class OrdersViewModel : ViewModel() {
         return "$prefix$todayStr$sequence"
     }
 
-    // 更新：加入 buyerName 與 prefix 參數
+    // 更新：加入 buyerName 與 prefix 參數，並儲存商品明細
     fun executeBatchOrder(
         cartList: List<CartItem>,
         buyerName: String,
@@ -91,6 +95,7 @@ class OrdersViewModel : ViewModel() {
             orderId = customOrderId, // 使用自動生成的編號
             buyerName = if (buyerName.isBlank()) "一般散客" else buyerName, // 或是讓使用者輸入姓名
             totalPrice = totalAmount,
+            items = cartList, // 【關鍵新增】：將購物車明細存入訂單，供後續 showOrderContent 顯示
             status = "NEW",
             timestamp = System.currentTimeMillis()
         )

@@ -13,5 +13,6 @@ data class Order(
     var totalPrice: Int = 0,         // 價格 (用於計算營收)
 
     var status: String = "NEW",      // 狀態：NEW (待確認), DONE (已完成)
-    var timestamp: Long = System.currentTimeMillis() // 下單時間
+    var timestamp: Long = System.currentTimeMillis(), // 下單時間
+    var items: List<CartItem> = emptyList() //存入下單時的明細
 )

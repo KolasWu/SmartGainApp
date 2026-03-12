@@ -88,7 +88,7 @@
         android:text="⚠️ 注意：下單後庫存將低於 5 個"
         android:textColor="#FF9800"
         android:textSize="12sp"
-        android:visibility="visible" />
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/btnAddItem"

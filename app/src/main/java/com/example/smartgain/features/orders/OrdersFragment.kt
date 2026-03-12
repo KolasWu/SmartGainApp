@@ -11,8 +11,10 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smartgain.R
 import com.example.smartgain.data.CartItem
+import com.example.smartgain.data.Order
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogManualOrderBinding
+import com.example.smartgain.databinding.DialogOrderDetailsBinding
 import com.example.smartgain.databinding.FragmentOrdersBinding
 
 class OrdersFragment : Fragment(R.layout.fragment_orders) {
@@ -27,7 +29,10 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         val binding = FragmentOrdersBinding.bind(view)
 
         // 1. 初始化主畫面的訂單列表
-        orderAdapter = OrderAdapter(emptyList())
+        orderAdapter = OrderAdapter(
+            emptyList(),
+            onLongClick = { orders -> showDeleteConfirmDialog(orders) },
+            onClick = { orders -> showOrderContent(orders) })
         binding.rvOrders.adapter = orderAdapter
 
         // 2. 觀察訂單 LiveData
@@ -41,6 +46,44 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         }
 
         viewModel.fetchOrders()
+    }
+
+    private fun showOrderContent(order: Order) {
+        // 1. 建立對話框 Binding
+        val dialogBinding = DialogOrderDetailsBinding.inflate(layoutInflater)
+
+        // 2. 設定基本資訊
+        dialogBinding.tvDetailTitle.text = "訂單：${order.orderId}"
+        dialogBinding.tvDetailBuyer.text = "買家：${order.buyerName}"
+        dialogBinding.tvDetailTotal.text = "總計：$${order.totalPrice}"
+
+        // 3. 組合商品明細字串
+        // 這裡我們把 List<CartItem> 轉換成易讀的文字列
+        if (order.items.isNotEmpty()) {
+            val details = order.items.joinToString("\n") { item ->
+                "• ${item.name} x ${item.quantity}  ($${item.subtotal})"
+            }
+            dialogBinding.tvItemsList.text = details
+        } else {
+            dialogBinding.tvItemsList.text = "無商品明細資料"
+        }
+
+        // 4. 彈出對話框
+        AlertDialog.Builder(requireContext())
+            .setView(dialogBinding.root)
+            .setPositiveButton("確定", null)
+            .show()
+    }
+
+    private fun showDeleteConfirmDialog(order: Order) {
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("刪除商品")
+            .setMessage("確定要刪除「${order.orderId}」嗎？此動作無法復原。")
+            .setPositiveButton("確定刪除") { _, _ ->
+                viewModel.deleteOrder(order.orderId)
+            }
+            .setNegativeButton("取消", null)
+            .show()
     }
 
     private fun showManualOrderDialog() {

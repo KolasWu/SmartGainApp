@@ -8,7 +8,11 @@ import com.example.smartgain.R
 import com.example.smartgain.data.Order
 import com.example.smartgain.databinding.ItemOrderBinding
 
-class OrderAdapter(private var orders: List<Order>) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
+class OrderAdapter(
+    private var orders: List<Order>,
+    private val onLongClick: (Order) -> Unit, // 長按回調
+    private val onClick: (Order) -> Unit // 點擊回調
+) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
     // 建立 ViewHolder，綁定每一列的 XML
     // 準備格子
@@ -21,6 +25,15 @@ class OrderAdapter(private var orders: List<Order>) : RecyclerView.Adapter<Order
     // 資料放進格子
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         holder.bind(orders[position])
+
+        holder.itemView.setOnClickListener {
+            onClick(orders[position])
+        }
+
+        holder.itemView.setOnLongClickListener {
+            onLongClick(orders[position])
+            true
+        }
     }
 
     // 告訴系統總共有幾件貨物

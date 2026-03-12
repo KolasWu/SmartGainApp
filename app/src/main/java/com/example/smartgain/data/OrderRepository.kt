@@ -1,5 +1,6 @@
 package com.example.smartgain.data
 
+import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
@@ -25,5 +26,19 @@ class OrderRepository {
 
         val finalOrder = order.copy(orderId = docRef.id)
         docRef.set(finalOrder)
+    }
+
+    fun deleteOrder(orderId: String) {
+        if (orderId.isEmpty()) return
+        db
+        .collection("orders")
+        .document(orderId)
+        .delete()
+            .addOnSuccessListener {
+                Log.d("Firestore", "Order deleted successfully")
+                }
+            .addOnFailureListener { e ->
+                Log.w("Firestore", "Error deleting order", e)
+            }
     }
 }
