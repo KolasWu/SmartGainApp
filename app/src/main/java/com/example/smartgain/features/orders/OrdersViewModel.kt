@@ -136,7 +136,6 @@ class OrdersViewModel : ViewModel() {
         return "$prefix$todayStr$sequence"
     }
 
-    // 更新：加入 buyerName 與 prefix 參數，並儲存商品明細
     fun executeBatchOrder(
         cartList: List<CartItem>,
         buyerName: String,
@@ -145,37 +144,38 @@ class OrdersViewModel : ViewModel() {
     ) {
         if (cartList.isEmpty()) return
 
-        // 1. 計算整張訂單的總金額
+        // 1. 生成訂單基本資料
         val totalAmount = cartList.sumOf { it.subtotal }
-
-        // 新增：根據規則生成自動編號
         val customOrderId = generateOrderNumber(prefix)
 
-        // 2. 建立一筆總體訂單
         val newOrder = Order(
-            orderId = customOrderId, // 使用自動生成的編號
-            buyerName = if (buyerName.isBlank()) "一般散客" else buyerName, // 或是讓使用者輸入姓名
+            orderId = customOrderId,
+            buyerName = if (buyerName.isBlank()) "一般散客" else buyerName,
             totalPrice = totalAmount,
-            items = cartList, // 【關鍵新增】：將購物車明細存入訂單，供後續 showOrderContent 顯示
+            items = cartList,
             status = "NEW",
             timestamp = System.currentTimeMillis()
         )
-        orderRepository.addOrder(newOrder)
 
-        // 3. 逐一處理庫存扣除與警示
+        // 2. 僅用於「警告提示」的迴圈 (不執行資料庫寫入)
         cartList.forEach { item ->
             val currentProd = _products.value?.find { it.productId == item.productId }
-            val latestStock = currentProd?.stock ?: item.stock // 優先用最新的
-            val remaining = latestStock - item.quantity
+            val latestStock = currentProd?.stock ?: item.stock
+            val estimatedRemaining = latestStock - item.quantity
 
-            // 觸發低庫存警示
-            if (remaining < 5) {
-                onWarning("商品 [${item.name}] 下單後庫存剩餘 $remaining，請注意補貨！")
+            if (estimatedRemaining < 5) {
+                onWarning("商品 [${item.name}] 下單後庫存將剩餘 $estimatedRemaining，請注意補貨！")
             }
+        }
 
-            // 呼叫 ProductRepository 更新該商品的剩餘數量
-            // 這裡我們直接傳入 productId 和新庫存量
-            productRepository.updateStock(item.productId, remaining)
+        // 3. 【核心修正】：將 Batch 寫入移到迴圈外！一次性處理整張單與所有庫存
+        // 注意：這裡不再呼叫 orderRepository.addOrder(newOrder)，因為 Batch 已經包辦了
+        productRepository.executeOrderBatch(newOrder, cartList) { success ->
+            if (success) {
+                android.util.Log.d("OrdersViewModel", "Batch 訂單成立且庫存已自動扣除 (Atomic)")
+            } else {
+                android.util.Log.e("OrdersViewModel", "Batch 寫入失敗")
+            }
         }
     }
 }
