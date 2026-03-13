@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
+import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
 
@@ -25,10 +26,10 @@ class OverviewViewModel : ViewModel() {
         orderRepository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val orders = it.toObjects(Order::class.java)
-                // 修正：這裡原本過濾了 status == "DONE"，導致新訂單(NEW)的金額沒被計入營收。
-                // 如果你想看目前所有訂單的總額，應移除過濾；或視需求調整狀態。
-                _revenue.value = orders.sumOf { o -> o.totalPrice }
-                _pendingCount.value = orders.count { o -> o.status == "NEW" }
+                // 只有「非刪除」且「非退回」的訂單才計入營收
+                _revenue.value = orders.filter { o ->
+                    o.status != OrderStatus.DELETED.name && o.status != OrderStatus.RETURNED.name
+                }.sumOf { o -> o.totalPrice }
             }
         }
 

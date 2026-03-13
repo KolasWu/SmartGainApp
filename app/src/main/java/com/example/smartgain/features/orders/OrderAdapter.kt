@@ -6,6 +6,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smartgain.R
 import com.example.smartgain.data.Order
+import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.databinding.ItemOrderBinding
 
 class OrderAdapter(
@@ -47,18 +48,21 @@ class OrderAdapter(
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(order: Order) {
+            val statusEnum = OrderStatus.fromString(order.status)
+
             binding.tvBuyerName.text = order.buyerName
             binding.tvOrderId.text = "#${order.orderId}"
             binding.tvTotalPrice.text = "$${order.totalPrice}"
-            binding.tvStatusTag.text = order.status
 
-            // 根據狀態改變標籤顏色
-            val context = binding.root.context
-            if (order.status == "DONE") {
-                binding.tvStatusTag.setBackgroundResource(R.drawable.bg_status_tag) // 你可以再做一個綠色的
-                binding.tvStatusTag.backgroundTintList = ContextCompat.getColorStateList(context, android.R.color.holo_green_dark)
+            // 動態設定文字與顏色
+            binding.tvStatusTag.text = statusEnum.label
+            binding.tvStatusTag.backgroundTintList = android.content.res.ColorStateList.valueOf(statusEnum.color)
+
+            // 如果是已刪除，可以讓整列變半透明或灰色
+            if (statusEnum == OrderStatus.DELETED) {
+                binding.root.alpha = 0.5f
             } else {
-                binding.tvStatusTag.backgroundTintList = ContextCompat.getColorStateList(context, android.R.color.holo_red_light)
+                binding.root.alpha = 1.0f
             }
         }
     }

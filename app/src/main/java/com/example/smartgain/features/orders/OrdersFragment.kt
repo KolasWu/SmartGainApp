@@ -45,7 +45,8 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
             showManualOrderDialog()
         }
 
-        viewModel.fetchOrders()
+        viewModel.fetchOrders()         //監聽訂單
+        viewModel.fetchProducts()       //監聽產品
     }
 
     private fun showOrderContent(order: Order) {
@@ -76,11 +77,23 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
     }
 
     private fun showDeleteConfirmDialog(order: Order) {
-        androidx.appcompat.app.AlertDialog.Builder(requireContext())
-            .setTitle("刪除商品")
-            .setMessage("確定要刪除「${order.orderId}」嗎？此動作無法復原。")
+        // 1. 建立一個 CheckBox 讓店東選擇
+        val checkBox = android.widget.CheckBox(requireContext()).apply {
+            text = "將商品退回庫存 (食物類/已損壞品請勿勾選)"
+            isChecked = false // 預設不勾選，確保庫存安全
+            // 設定一點間距讓畫面比較好看
+            setPadding(48, 16, 48, 16)
+        }
+
+        // 2. 建立彈出視窗
+        AlertDialog.Builder(requireContext())
+            .setTitle("刪除/退貨訂單")
+            .setMessage("確定要刪除訂單 #${order.orderId} 嗎？\n刪除後營收將自動減少 $$${order.totalPrice}")
+            .setView(checkBox) // 將 CheckBox 放入對話框
             .setPositiveButton("確定刪除") { _, _ ->
-                viewModel.deleteOrder(order.orderId)
+                // 呼叫我們剛才寫好的 ViewModel 邏輯
+                viewModel.deleteOrder(order.orderId, checkBox.isChecked)
+                Toast.makeText(context, "訂單已移除", Toast.LENGTH_SHORT).show()
             }
             .setNegativeButton("取消", null)
             .show()

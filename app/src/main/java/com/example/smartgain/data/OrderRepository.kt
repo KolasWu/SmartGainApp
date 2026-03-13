@@ -31,14 +31,26 @@ class OrderRepository {
     fun deleteOrder(orderId: String) {
         if (orderId.isEmpty()) return
         db
-        .collection("orders")
-        .document(orderId)
-        .delete()
+            .collection("orders")
+            .document(orderId)
+            .delete()
             .addOnSuccessListener {
                 Log.d("Firestore", "Order deleted successfully")
-                }
+            }
             .addOnFailureListener { e ->
                 Log.w("Firestore", "Error deleting order", e)
             }
+    }
+
+    fun updateOrderStatus(orderId: String, newStatus: OrderStatus) {
+        if (orderId.isEmpty()) return
+        db.collection("orders")
+            .document(orderId)
+            .update("status", newStatus.name) // 只更新 status 欄位
+    }
+
+    // 原本的 deleteOrder 可以保留，但邏輯改為將狀態設為 DELETED
+    fun markOrderAsDeleted(orderId: String) {
+        updateOrderStatus(orderId, OrderStatus.DELETED)
     }
 }

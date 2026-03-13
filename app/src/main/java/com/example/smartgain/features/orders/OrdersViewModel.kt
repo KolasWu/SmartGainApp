@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.CartItem
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
+import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
 import java.text.SimpleDateFormat
@@ -48,15 +49,75 @@ class OrdersViewModel : ViewModel() {
     }
 
     // 抓取商品供選單使用
-    fun fetchProducts() {
-        productRepository.getProductsQuery().get().addOnSuccessListener { snapshot ->
-            _products.value = snapshot.toObjects(Product::class.java)
+    // 修改為即時監聽，這樣 _products 永遠有最新數據
+    fun fetchProducts() {    productRepository.getProductsQuery().addSnapshotListener { snapshot, error ->
+        if (error != null) {
+            android.util.Log.e("OrdersViewModel", "監聽產品失敗", error)
+            return@addSnapshotListener
+        }
+        snapshot?.let {
+            _products.value = it.toObjects(Product::class.java)
         }
     }
-
-    fun deleteOrder(orderId: String) {
-        orderRepository.deleteOrder(orderId)
     }
+
+    fun updateStatus(orderId: String, newStatus: OrderStatus) {
+        orderRepository.updateOrderStatus(orderId, newStatus)
+    }
+
+    fun deleteOrder(orderId: String, checked: Boolean) {
+        val targetOrder = _orders.value?.find { it.orderId == orderId }
+
+        // Log 1: 檢查有沒有找到訂單
+        android.util.Log.d("OrdersViewModel", "嘗試刪除訂單: $orderId, 找到物件: ${targetOrder != null}")
+
+        if (checked && targetOrder != null) {
+            targetOrder.items.forEach { item ->
+                // Log 2: 檢查清單中的商品 ID
+                val currentProduct = _products.value?.find { it.productId == item.productId }
+
+                android.util.Log.d("OrdersViewModel", "商品: ${item.name}, ID: ${item.productId}, 當前庫存緩存: ${currentProduct?.stock}")
+
+                if (currentProduct != null) {
+                    val restoredStock = currentProduct.stock + item.quantity
+                    productRepository.updateStock(item.productId, restoredStock)
+                    android.util.Log.d("OrdersViewModel", "成功送出更新請求: $restoredStock")
+                } else {
+                    // 如果 _products 沒資料，嘗試直接從數據庫加回 (這是最後的保險)
+                    android.util.Log.e("OrdersViewModel", "緩存中找不到產品，改用備用方案")
+                    // 注意：這裡如果用 item.stock + item.quantity 可能會回到 17 個的問題
+                    // 建議直接印出錯誤，並檢查為什麼 _products 是空的
+                }
+            }
+        }
+        orderRepository.markOrderAsDeleted(orderId)
+    }
+
+    /*
+    fun deleteOrder(orderId: String, shouldRestock: Boolean) {
+        // 1. 先從目前的 LiveData 列表中找到該筆訂單的完整資料
+        val orderToDelete = _orders.value?.find { it.orderId == orderId }
+
+        // 2. 執行刪除動作
+        orderRepository.deleteOrder(orderId)
+
+        // 3. 如果需要退回庫存，且有找到訂單資料
+        if (shouldRestock && orderToDelete != null && orderToDelete.items.isNotEmpty()) {
+            orderToDelete.items.forEach { item ->
+                // 從目前的產品列表中找到該商品，獲取最新庫存
+                val currentProduct = _products.value?.find { it.productId == item.productId }
+
+                if (currentProduct != null) {
+                    // 計算退回後的庫存：目前庫存 + 訂單當初扣除的數量
+                    val newStock = currentProduct.stock + item.quantity
+                    productRepository.updateStock(item.productId, newStock)
+                } else {
+                    // 如果產品列表沒緩存，則退回到下單時記錄的原始庫存加上去（保險做法）
+                    productRepository.updateStock(item.productId, item.stock + item.quantity)
+                }
+            }
+        }
+    }*/
 
     /**
      * 新增：生成訂單編號邏輯
@@ -103,7 +164,9 @@ class OrdersViewModel : ViewModel() {
 
         // 3. 逐一處理庫存扣除與警示
         cartList.forEach { item ->
-            val remaining = item.stock - item.quantity
+            val currentProd = _products.value?.find { it.productId == item.productId }
+            val latestStock = currentProd?.stock ?: item.stock // 優先用最新的
+            val remaining = latestStock - item.quantity
 
             // 觸發低庫存警示
             if (remaining < 5) {
