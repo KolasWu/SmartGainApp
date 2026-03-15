@@ -13,7 +13,8 @@ enum class OrderStatus(val label: String, val color: Int) {
 
     companion object {
         fun fromString(value: String): OrderStatus {
-            return entries.find { it.name == value } ?: NEW
+            // 使用 equals 並忽略大小寫，避免資料庫手殘存成小寫
+            return entries.find { it.name.equals(value, ignoreCase = true) } ?: NEW
         }
     }
 }

@@ -44,7 +44,18 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
                     Toast.makeText(context, "訂單目前為[${currentStatus.label}]，無法刪除", Toast.LENGTH_SHORT).show()
                 else
                     showDeleteConfirmDialog(order) },
-            onClick = { orders -> showOrderContent(orders) })
+            onClick = { order -> showOrderContent(order) },
+            onStatusClick = { order ->
+                val currentStatus = OrderStatus.fromString(order.status)
+                val restrictedStatuses = setOf(
+                    OrderStatus.DONE,
+                    OrderStatus.DELETED,
+                    OrderStatus.RETURNED
+                )
+                if(currentStatus !in restrictedStatuses) showStatusUpdateDialog(order)
+                else Toast.makeText(context, "此狀態不可修改", Toast.LENGTH_SHORT).show()
+            }
+        )
         binding.rvOrders.adapter = orderAdapter
 
         // 2. 觀察訂單 LiveData
@@ -85,6 +96,26 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         AlertDialog.Builder(requireContext())
             .setView(dialogBinding.root)
             .setPositiveButton("確定", null)
+            .show()
+    }
+
+    private fun showStatusUpdateDialog(order: Order) {
+        // 1. 取得除了 DELETED 以外的所有狀態（刪除應走長按流程）
+        val statusOptions = OrderStatus.entries.filter { it != OrderStatus.DELETED }
+        val labels = statusOptions.map { it.label }.toTypedArray()
+
+        // 2. 彈出 Material 選擇視窗
+        androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("變更訂單狀態")
+            .setItems(labels) { _, which ->
+                val selectedStatus = statusOptions[which]
+
+                // 3. 呼叫 ViewModel 更新 Firestore
+                viewModel.updateStatus(order.orderId, selectedStatus)
+
+                Toast.makeText(context, "狀態已更新為：${selectedStatus.label}", Toast.LENGTH_SHORT).show()
+            }
+            .setNegativeButton("取消", null)
             .show()
     }
 

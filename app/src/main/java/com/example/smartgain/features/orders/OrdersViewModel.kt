@@ -62,6 +62,13 @@ class OrdersViewModel : ViewModel() {
     }
 
     fun updateStatus(orderId: String, newStatus: OrderStatus) {
+        val currentOrder = _orders.value?.find { it.orderId == orderId }
+
+        // 如果訂單已經是 DELETED，就不允許透過這個管道修改
+        if (currentOrder?.status == OrderStatus.DELETED.name) {
+            android.util.Log.w("OrdersViewModel", "無法修改已刪除訂單的狀態")
+            return
+        }
         orderRepository.updateOrderStatus(orderId, newStatus)
     }
 

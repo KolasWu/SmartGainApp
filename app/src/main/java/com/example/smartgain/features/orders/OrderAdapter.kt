@@ -2,17 +2,16 @@ package com.example.smartgain.features.orders
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
-import com.example.smartgain.R
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.databinding.ItemOrderBinding
 
 class OrderAdapter(
     private var orders: List<Order>,
-    private val onLongClick: (Order) -> Unit, // 長按回調
-    private val onClick: (Order) -> Unit // 點擊回調
+    private val onLongClick: (Order) -> Unit,   // 長按回調
+    private val onClick: (Order) -> Unit,       // 點擊回調
+    private val onStatusClick: (Order) -> Unit    // 點擊狀態回調
 ) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
     // 建立 ViewHolder，綁定每一列的 XML
@@ -27,10 +26,18 @@ class OrderAdapter(
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         holder.bind(orders[position])
 
+        // 1. 點擊整塊卡片 (Root View) -> 查看訂單內容
         holder.itemView.setOnClickListener {
             onClick(orders[position])
         }
 
+        // 2. 點擊狀態標籤 (tvStatusTag) -> 彈出修改狀態選單
+        // 注意：這裡直接抓 ViewHolder 裡的 binding 元件
+        holder.getBinding().tvStatusTag.setOnClickListener {
+            onStatusClick(orders[position])
+        }
+
+        // 3. 長按整塊卡片 -> 刪除邏輯
         holder.itemView.setOnLongClickListener {
             onLongClick(orders[position])
             true
@@ -47,6 +54,8 @@ class OrderAdapter(
     }
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
+
+        fun getBinding() = binding // 增加一個方法讓外部可以拿到標籤元件
         fun bind(order: Order) {
             val statusEnum = OrderStatus.fromString(order.status)
 
@@ -59,10 +68,15 @@ class OrderAdapter(
             binding.tvStatusTag.backgroundTintList = android.content.res.ColorStateList.valueOf(statusEnum.color)
 
             // 如果是已刪除，可以讓整列變半透明或灰色
-            if (statusEnum == OrderStatus.DELETED) {
+            if (statusEnum == OrderStatus.DELETED ||
+            statusEnum == OrderStatus.RETURNED ||
+            statusEnum == OrderStatus.DONE)
+            {
                 binding.root.alpha = 0.5f
+                binding.root.isEnabled = false
             } else {
                 binding.root.alpha = 1.0f
+                binding.root.isEnabled = true
             }
         }
     }

@@ -25,7 +25,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="買家名稱"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:text="#SG0001"
                 android:textColor="#888888"
-                android:textSize="12sp" />
+                android:textSize="16sp" />
         </LinearLayout>
 
         <LinearLayout
@@ -50,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:text="$0"
                 android:textColor="#4CAF50"
-                android:textSize="16sp"
+                android:textSize="20sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -59,10 +59,10 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_status_tag"
                 android:paddingHorizontal="8dp"
-                android:paddingVertical="2dp"
+                android:paddingVertical="8dp"
                 android:text="NEW"
                 android:textColor="#FFFFFF"
-                android:textSize="11sp" />
+                android:textSize="16sp" />
         </LinearLayout>
 
     </RelativeLayout>
