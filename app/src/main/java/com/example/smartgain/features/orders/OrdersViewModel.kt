@@ -72,6 +72,18 @@ class OrdersViewModel : ViewModel() {
         orderRepository.updateOrderStatus(orderId, newStatus)
     }
 
+    fun deleteOrder(order: Order) {
+        // 這裡直接傳入整筆訂單物件
+        productRepository.cancelOrderAndRestoreStock(order) { success ->
+            if (success) {
+                android.util.Log.d("OrdersViewModel", "訂單取消與庫存回補成功")
+            } else {
+                android.util.Log.e("OrdersViewModel", "操作失敗")
+            }
+        }
+    }
+
+    /* 第二版
     fun deleteOrder(orderId: String, checked: Boolean) {
         val targetOrder = _orders.value?.find { it.orderId == orderId }
 
@@ -98,9 +110,9 @@ class OrdersViewModel : ViewModel() {
             }
         }
         orderRepository.markOrderAsDeleted(orderId)
-    }
+    }*/
 
-    /*
+    /* 第一版
     fun deleteOrder(orderId: String, shouldRestock: Boolean) {
         // 1. 先從目前的 LiveData 列表中找到該筆訂單的完整資料
         val orderToDelete = _orders.value?.find { it.orderId == orderId }

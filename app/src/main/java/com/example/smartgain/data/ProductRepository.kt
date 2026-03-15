@@ -73,4 +73,25 @@ class ProductRepository {
             .addOnSuccessListener { onComplete(true) }
             .addOnFailureListener { onComplete(false) }
     }
+
+    fun cancelOrderAndRestoreStock(order: Order, onComplete: (Boolean) -> Unit) {
+        val batch = db.batch()
+
+        // 1. 定義訂單文件位置
+        val orderRef = db.collection("orders").document(order.orderId)
+        // 2. 將訂單狀態改為 DELETED (或是 RETURNED)
+        batch.update(orderRef, "status", OrderStatus.DELETED.name)
+
+        // 3. 迴圈處理商品庫存回補
+        order.items.forEach { item ->
+            val productRef = db.collection("products").document(item.productId)
+            // 直接在伺服器端執行 +數量，不需要讀取本地緩存
+            batch.update(productRef, "stock", com.google.firebase.firestore.FieldValue.increment(item.quantity.toLong()))
+        }
+
+        // 4. 一次性送出
+        batch.commit().addOnCompleteListener { task ->
+            onComplete(task.isSuccessful)
+        }
+    }
 }
