@@ -2,16 +2,15 @@ package com.example.smartgain.data
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.WriteBatch
 
 class ProductRepository {
     private val db = FirebaseFirestore.getInstance()
-    private val productsCollection = db.collection("products")
+//    private val productsCollection = db.collection("products")
 
     // 更新商品（用於扣庫存）
-    fun updateProduct(product: Product) {
-        productsCollection.document(product.productId).set(product)
-    }
+//    fun updateProduct(product: Product) {
+//        productsCollection.document(product.productId).set(product)
+//    }
 
     // 取得商品，並按名稱排序
     fun getProductsQuery() = db
@@ -64,7 +63,7 @@ class ProductRepository {
         // 2. 循環處理庫存扣除
         cartList.forEach { item ->
             val productRef = db.collection("products").document(item.productId)
-            // 使用 increment(-item.quantity) 是最安全的方法，能避開「17個」那種覆蓋錯誤
+            // 使用 increment(-item.quantity) 是最安全的方法
             // 它會直接在資料庫現有的數值上做減法，不需要先讀取目前的數值
             batch.update(productRef, "stock", com.google.firebase.firestore.FieldValue.increment(-item.quantity.toLong()))
         }

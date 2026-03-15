@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smartgain.R
 import com.example.smartgain.data.CartItem
 import com.example.smartgain.data.Order
+import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogManualOrderBinding
 import com.example.smartgain.databinding.DialogOrderDetailsBinding
@@ -31,7 +32,18 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         // 1. 初始化主畫面的訂單列表
         orderAdapter = OrderAdapter(
             emptyList(),
-            onLongClick = { orders -> showDeleteConfirmDialog(orders) },
+            onLongClick = { order ->
+                val currentStatus = OrderStatus.fromString(order.status)
+                val restrictedStatuses = setOf(
+                    OrderStatus.DONE,
+                    OrderStatus.DELETED,
+                    OrderStatus.RETURNED
+                )
+
+                if(currentStatus in restrictedStatuses)
+                    Toast.makeText(context, "訂單目前為[${currentStatus.label}]，無法刪除", Toast.LENGTH_SHORT).show()
+                else
+                    showDeleteConfirmDialog(order) },
             onClick = { orders -> showOrderContent(orders) })
         binding.rvOrders.adapter = orderAdapter
 
