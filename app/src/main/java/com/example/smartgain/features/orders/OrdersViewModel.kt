@@ -9,6 +9,7 @@ import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
+import com.google.firebase.auth.FirebaseAuth
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -16,6 +17,7 @@ import java.util.Locale
 class OrdersViewModel : ViewModel() {
     private val orderRepository = OrderRepository()
     private val productRepository = ProductRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     private val _orders = MutableLiveData<List<Order>>()
     val orders: LiveData<List<Order>> = _orders
@@ -28,9 +30,13 @@ class OrdersViewModel : ViewModel() {
 
     // 監聽訂單數據
     fun fetchOrders() {
-        orderRepository.getOrdersQuery().addSnapshotListener { snapshot, error ->
+        // 無論是手動還是網頁，只要 seller_id 對了，就會被 SnapshotListener 抓到
+        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+
+        orderRepository.getOrdersQuery(myId).addSnapshotListener { snapshot, error ->
             if (error != null) return@addSnapshotListener
             snapshot?.let {
+                // 這裡會包含：你手動新增的 + 網頁剛下的
                 _orders.value = it.toObjects(Order::class.java)
             }
         }
@@ -38,7 +44,8 @@ class OrdersViewModel : ViewModel() {
 
     // 監聽庫存數據 (修正點：改用 productRepository)
     fun fetchOverviewData() {
-        productRepository.getProductsQuery().addSnapshotListener { snapshot, error ->
+        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, error ->
             if (error != null) return@addSnapshotListener
             snapshot?.let {
                 val products = it.toObjects(Product::class.java)
@@ -50,7 +57,9 @@ class OrdersViewModel : ViewModel() {
 
     // 抓取商品供選單使用
     // 修改為即時監聽，這樣 _products 永遠有最新數據
-    fun fetchProducts() {    productRepository.getProductsQuery().addSnapshotListener { snapshot, error ->
+    fun fetchProducts() {
+        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, error ->
         if (error != null) {
             android.util.Log.e("OrdersViewModel", "監聽產品失敗", error)
             return@addSnapshotListener

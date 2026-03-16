@@ -13,7 +13,7 @@ class ProductRepository {
 //    }
 
     // 取得商品，並按名稱排序
-    fun getProductsQuery() = db
+    fun getProductsQuery(sellerId: String) = db
         .collection("products")
         .orderBy("name", Query.Direction.ASCENDING) // 按名稱 A-Z 排序
 

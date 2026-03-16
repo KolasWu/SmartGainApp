@@ -16,8 +16,9 @@ class ManagementViewModel : ViewModel() {
     val products: LiveData<List<Product>> = _products
 
     fun fetchProducts() {
+        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
         // 修正：現在由 ProductRepository 負責提供產品查詢
-        repository.getProductsQuery().addSnapshotListener { snapshot, _ ->
+        repository.getProductsQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 _products.value = it.toObjects(Product::class.java)
             }

@@ -11,8 +11,9 @@ class OrderRepository {
     private val db = FirebaseFirestore.getInstance()
 
     // 取得所有訂單，並按時間排序
-    fun getOrdersQuery() = db
+    fun getOrdersQuery(sellerId: String) = db
         .collection("orders")
+        .whereEqualTo("seller_id", sellerId) // 只抓屬於我的單
         .orderBy("timestamp", Query.Direction.DESCENDING)
 
 
@@ -53,4 +54,10 @@ class OrderRepository {
     fun markOrderAsDeleted(orderId: String) {
         updateOrderStatus(orderId, OrderStatus.DELETED)
     }
+
+    fun getNewOrdersQuery(sellerId: String) = db
+        .collection("orders")
+        .whereEqualTo("seller_id", sellerId)
+        .whereEqualTo("status", "NEW")
+        .orderBy("timestamp", Query.Direction.DESCENDING)
 }

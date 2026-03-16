@@ -8,11 +8,13 @@ import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
+import com.google.firebase.auth.FirebaseAuth
 
 class OverviewViewModel : ViewModel() {
     // 拆分為兩個專門的 Repository
     private val orderRepository = OrderRepository()
     private val productRepository = ProductRepository()
+    private val auth = FirebaseAuth.getInstance()
 
     //營收與訂單
     private val _revenue = MutableLiveData<Int>(0)
@@ -22,8 +24,10 @@ class OverviewViewModel : ViewModel() {
     val pendingCount: LiveData<Int> = _pendingCount
 
     fun fetchTodaySummary() {
+        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+
         // 監聽訂單以計算營收與待處理 (使用 orderRepository)
-        orderRepository.getOrdersQuery().addSnapshotListener { snapshot, _ ->
+        orderRepository.getOrdersQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val orders = it.toObjects(Order::class.java)
                 // 只有「非刪除」且「非退回」的訂單才計入營收
@@ -34,7 +38,7 @@ class OverviewViewModel : ViewModel() {
         }
 
         // 監聽商品以更新庫存警告
-        productRepository.getProductsQuery().addSnapshotListener { snapshot, _ ->
+        productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 val allProducts = it.toObjects(Product::class.java)
 
