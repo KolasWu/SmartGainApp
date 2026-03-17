@@ -57,7 +57,10 @@ class MainActivity : AppCompatActivity() {
         } else {
             // 已登入：顯示導覽列並載入首頁
             binding.bottomNavigation.visibility = View.VISIBLE
-            binding.bottomNavigation.selectedItemId = R.id.nav_overview
+            // 只有在目前不在任何頁面時才預設選中首頁，避免重複載入
+            if (supportFragmentManager.backStackEntryCount == 0) {
+                binding.bottomNavigation.selectedItemId = R.id.nav_overview
+            }
         }
     }
 

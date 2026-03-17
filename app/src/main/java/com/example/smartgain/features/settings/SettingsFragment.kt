@@ -12,7 +12,9 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.Toast
+import com.example.smartgain.MainActivity
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -77,6 +79,24 @@ class SettingsFragment : Fragment() {
             } else {
                 Toast.makeText(context, "無法複製連結，請確認登入狀態", Toast.LENGTH_SHORT).show()
             }
+        }
+
+        // 登出按鈕邏輯
+        binding.btnLogout.setOnClickListener {
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+                .setTitle("登出帳號")
+                .setMessage("您確定要登出 SmartGain 嗎？")
+                .setPositiveButton("確定登出") { _, _ ->
+                    // 執行 Firebase 登出
+                    com.google.firebase.Firebase.auth.signOut()
+
+                    // 呼叫 MainActivity 的方法來檢查狀態並切換 Fragment
+                    (activity as? MainActivity)?.checkUserStatus()
+
+                    android.widget.Toast.makeText(context, "已成功登出", android.widget.Toast.LENGTH_SHORT).show()
+                }
+                .setNegativeButton("取消", null)
+                .show()
         }
     }
 
