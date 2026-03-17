@@ -11,7 +11,7 @@ class OrderRepository {
     private val db = FirebaseFirestore.getInstance()
 
     // 取得所有訂單，並按時間排序
-    fun getOrdersQuery(sellerId: String) = db
+    fun getOrdersQuery(sellerId: String): Query = db
         .collection("orders")
         .whereEqualTo("seller_id", sellerId) // 只抓屬於我的單
         .orderBy("timestamp", Query.Direction.DESCENDING)

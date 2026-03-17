@@ -48,14 +48,14 @@ class SettingsFragment : Fragment() {
         val auth = FirebaseAuth.getInstance()
         val currentUserId = auth.currentUser?.uid
 
-        val myShopUrl = "https://smartgain.web.app/?shopId=TEST_SELLER_001"
+//        val myShopUrl = "https://smartgain.web.app/?shopId=TEST_SELLER_001"
 
         // 如果有 UID，就組合成 SmartGain 網址，否則給一個空字串或錯誤提示
-//        val myShopUrl = if (currentUserId != null) {
-//            "https://smartgain.web.app/?shopId=$currentUserId"
-//        } else {
-//            ""
-//        }
+        val myShopUrl = if (currentUserId != null) {
+            "https://smartgain.web.app/?shopId=$currentUserId"
+        } else {
+            ""
+        }
 
         // 點擊預覽賣場
         binding.btnOpenMyStore.setOnClickListener {

@@ -15,6 +15,7 @@ class ProductRepository {
     // 取得商品，並按名稱排序
     fun getProductsQuery(sellerId: String) = db
         .collection("products")
+        .whereEqualTo("seller_id", sellerId)
         .orderBy("name", Query.Direction.ASCENDING) // 按名稱 A-Z 排序
 
     // 新增產品 upsert = update or insert

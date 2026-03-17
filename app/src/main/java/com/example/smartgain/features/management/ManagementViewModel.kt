@@ -16,7 +16,7 @@ class ManagementViewModel : ViewModel() {
     val products: LiveData<List<Product>> = _products
 
     fun fetchProducts() {
-        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        val myId = auth.currentUser?.uid ?: return
         // 修正：現在由 ProductRepository 負責提供產品查詢
         repository.getProductsQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
@@ -27,7 +27,7 @@ class ManagementViewModel : ViewModel() {
 
     fun addProduct(name: String, price: Int, stock: Int, imageUrl: String = "") {
         // 1. 取得目前登入賣家的 UID
-        val currentUserId = auth.currentUser?.uid ?: "GUEST_SELLER"
+        val currentUserId = auth.currentUser?.uid ?: return
 
         val product = Product(
             productId = "", // 傳空，交給 Repository 處理 ID
@@ -35,7 +35,7 @@ class ManagementViewModel : ViewModel() {
             price = price,
             stock = stock,
             imageUrl = imageUrl,
-            seller_id = currentUserId // 自動帶入賣家 ID
+            sellerId = currentUserId // 自動帶入賣家 ID
         )
         repository.addProduct(product)
     }
@@ -45,14 +45,14 @@ class ManagementViewModel : ViewModel() {
     }
 
     fun updateProduct(id: String, name: String, price: Int, stock: Int, imageUrl: String = "") {
-        val currentUserId = auth.currentUser?.uid ?: "GUEST_SELLER"
+        val currentUserId = auth.currentUser?.uid ?: return
         val product = Product(
             productId = id, // 傳入現有的 ID，Repository 就會執行「覆蓋」動作
             name = name,
             price = price,
             stock = stock,
             imageUrl = imageUrl,
-            seller_id = currentUserId
+            sellerId = currentUserId
         )
         repository.addProduct(product)
     }

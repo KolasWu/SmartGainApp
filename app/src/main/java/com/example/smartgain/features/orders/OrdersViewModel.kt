@@ -1,5 +1,6 @@
 package com.example.smartgain.features.orders // 1. 修正 package 名稱
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,20 +32,51 @@ class OrdersViewModel : ViewModel() {
     // 監聽訂單數據
     fun fetchOrders() {
         // 無論是手動還是網頁，只要 seller_id 對了，就會被 SnapshotListener 抓到
-        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        val myId = auth.currentUser?.uid ?: return
+
+        Log.d("SmartGainDebug", "開始，目前SellerID是: $myId")
 
         orderRepository.getOrdersQuery(myId).addSnapshotListener { snapshot, error ->
-            if (error != null) return@addSnapshotListener
+            if (error != null){
+                Log.e("SmartGainDebug", "Firestore 監聽失敗，原因: ${error.message}", error)
+                return@addSnapshotListener
+            }
+            if (snapshot != null) {
+                // Log 3: 確認到底抓到了幾份文件
+                Log.d("SmartGainDebug", "Snapshot 更新！抓到的原始文件數量: ${snapshot.size()}")
+
+                if (snapshot.isEmpty) {
+                    Log.w("SmartGainDebug", "警告：資料庫回傳成功，但該 SellerID 下沒有任何訂單數據。")
+                }
+
+                try {
+                    val orderList = snapshot.toObjects(Order::class.java)
+                    // Log 4: 檢查轉換成 Kotlin 物件後有沒有遺失資料
+                    Log.d("SmartGainDebug", "成功轉換為 Order 物件，列表長度: ${orderList.size}")
+
+                    if (orderList.isNotEmpty()) {
+                        Log.d("SmartGainDebug", "第一筆訂單 ID: ${orderList[0].orderId}, 狀態: ${orderList[0].status}")
+                    }
+
+                    _orders.value = orderList
+                } catch (e: Exception) {
+                    // Log 5: 格式轉換出錯（通常是 Data Class 屬性名稱對不起來）
+                    Log.e("SmartGainDebug", "資料轉換成 Order 物件時發生錯誤: ${e.message}")
+                }
+            } else {
+                Log.d("SmartGainDebug", "Snapshot 為空 (null)")
+            }
             snapshot?.let {
                 // 這裡會包含：你手動新增的 + 網頁剛下的
                 _orders.value = it.toObjects(Order::class.java)
             }
         }
+        Log.d("OrderCheck", "目前登入的 UID 是: ${auth.currentUser?.uid}")
     }
 
     // 監聽庫存數據 (修正點：改用 productRepository)
     fun fetchOverviewData() {
-        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        val myId = auth.currentUser?.uid ?: return
         productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, error ->
             if (error != null) return@addSnapshotListener
             snapshot?.let {
@@ -58,7 +90,7 @@ class OrdersViewModel : ViewModel() {
     // 抓取商品供選單使用
     // 修改為即時監聽，這樣 _products 永遠有最新數據
     fun fetchProducts() {
-        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        val myId = auth.currentUser?.uid ?: return
         productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, error ->
         if (error != null) {
             android.util.Log.e("OrdersViewModel", "監聽產品失敗", error)
@@ -172,12 +204,15 @@ class OrdersViewModel : ViewModel() {
     ) {
         if (cartList.isEmpty()) return
 
+        val myId = auth.currentUser?.uid ?: return // 取得目前 ID
+
         // 1. 生成訂單基本資料
         val totalAmount = cartList.sumOf { it.subtotal }
         val customOrderId = generateOrderNumber(prefix)
 
         val newOrder = Order(
             orderId = customOrderId,
+            sellerId = myId,
             buyerName = if (buyerName.isBlank()) "一般散客" else buyerName,
             totalPrice = totalAmount,
             items = cartList,

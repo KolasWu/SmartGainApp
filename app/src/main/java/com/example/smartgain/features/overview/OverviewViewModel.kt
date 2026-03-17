@@ -24,7 +24,7 @@ class OverviewViewModel : ViewModel() {
     val pendingCount: LiveData<Int> = _pendingCount
 
     fun fetchTodaySummary() {
-        val myId = auth.currentUser?.uid ?: "TEST_SELLER_001"
+        val myId = auth.currentUser?.uid ?: return
 
         // 監聽訂單以計算營收與待處理 (使用 orderRepository)
         orderRepository.getOrdersQuery(myId).addSnapshotListener { snapshot, _ ->
