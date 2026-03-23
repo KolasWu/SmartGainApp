@@ -1,7 +1,5 @@
 package com.example.smartgain.features.overview
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderRepository
@@ -9,6 +7,8 @@ import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class OverviewViewModel : ViewModel() {
     // 拆分為兩個專門的 Repository
@@ -17,11 +17,17 @@ class OverviewViewModel : ViewModel() {
     private val auth = FirebaseAuth.getInstance()
 
     //營收與訂單
-    private val _revenue = MutableLiveData<Int>(0)
-    val revenue: LiveData<Int> = _revenue
+    private val _revenue = MutableStateFlow<Int>(0)
+    val revenue: StateFlow<Int> = _revenue
 
-    private val _pendingCount = MutableLiveData<Int>(0)
-    val pendingCount: LiveData<Int> = _pendingCount
+    private val _pendingCount = MutableStateFlow<Int>(0)
+    val pendingCount: StateFlow<Int> = _pendingCount
+
+    // 庫存相關
+    private val _lowStockCount = MutableStateFlow<Int>(0)
+    val lowStockCount: StateFlow<Int> = _lowStockCount
+    private val _lowStockProducts = MutableStateFlow<List<Product>>(emptyList())
+    val lowStockProducts: StateFlow<List<Product>> = _lowStockProducts
 
     fun fetchTodaySummary() {
         val myId = auth.currentUser?.uid ?: return
@@ -50,10 +56,4 @@ class OverviewViewModel : ViewModel() {
             }
         }
     }
-
-    // 庫存相關
-    private val _lowStockCount = MutableLiveData<Int>(0)
-    val lowStockCount: LiveData<Int> = _lowStockCount
-    private val _lowStockProducts = MutableLiveData<List<Product>>()
-    val lowStockProducts: LiveData<List<Product>> = _lowStockProducts
 }

@@ -6,7 +6,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.smartgain.databinding.FragmentOverviewBinding
+import kotlinx.coroutines.launch
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -39,32 +43,41 @@ class OverviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 觀察營收與待處理量
-        viewModel.revenue.observe(viewLifecycleOwner) { total ->
-            binding.layoutSummary.tvRevenue.text = "$$total"
-        }
-
-        viewModel.pendingCount.observe(viewLifecycleOwner) { count ->
-            binding.layoutSummary.tvPendingCount.text = count.toString()
-        }
-
-        // 觀察庫存警告數字
-        viewModel.lowStockCount.observe(viewLifecycleOwner) { count ->
-            binding.layoutSummary.tvLowStock.text = count.toString()
-        }
-
-        // 新增：觀察庫存不足清單並更新「最近動態」
-        viewModel.lowStockProducts.observe(viewLifecycleOwner) { products ->
-            if (products.isEmpty()) {
-                binding.tvRecentActivity.text = "目前沒有特別動態"
-                binding.tvRecentActivity.setTextColor(android.graphics.Color.GRAY)
-            } else {
-                // 組合警告文字
-                val warningText = products.joinToString("\n") { p ->
-                    "⚠️ 警告：${p.name} 庫存僅剩 ${p.stock} 件！"
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                // 觀察營收與待處理量
+                launch {
+                    viewModel.revenue.collect { total ->
+                        binding.layoutSummary.tvRevenue.text = "$$total"
+                    }
                 }
-                binding.tvRecentActivity.text = warningText
-                binding.tvRecentActivity.setTextColor(android.graphics.Color.RED)
+                launch {
+                    viewModel.pendingCount.collect {
+                        binding.layoutSummary.tvPendingCount.text = it.toString()
+                    }
+                }
+                // 觀察庫存警告數字
+                launch {
+                    viewModel.lowStockCount.collect { count ->
+                        binding.layoutSummary.tvLowStock.text = count.toString()
+                    }
+                }
+                // 新增：觀察庫存不足清單並更新「最近動態」
+                launch {
+                    viewModel.lowStockProducts.collect { products ->
+                        if (products.isEmpty()) {
+                            binding.tvRecentActivity.text = "目前沒有特別動態"
+                            binding.tvRecentActivity.setTextColor(android.graphics.Color.GRAY)
+                        } else {
+                            // 組合警告文字
+                            val warningText = products.joinToString("\n") { p ->
+                                "⚠️ 警告：${p.name} 庫存僅剩 ${p.stock} 件！"
+                            }
+                            binding.tvRecentActivity.text = warningText
+                            binding.tvRecentActivity.setTextColor(android.graphics.Color.RED)
+                        }
+                    }
+                }
             }
         }
 

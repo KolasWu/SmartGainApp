@@ -8,6 +8,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.smartgain.R
 import com.example.smartgain.data.CartItem
@@ -17,6 +20,7 @@ import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogManualOrderBinding
 import com.example.smartgain.databinding.DialogOrderDetailsBinding
 import com.example.smartgain.databinding.FragmentOrdersBinding
+import kotlinx.coroutines.launch
 
 class OrdersFragment : Fragment(R.layout.fragment_orders) {
     private val viewModel: OrdersViewModel by viewModels()
@@ -59,8 +63,15 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         binding.rvOrders.adapter = orderAdapter
 
         // 2. 觀察訂單 LiveData
-        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
-            orderAdapter.updateData(orderList)
+//        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
+//            orderAdapter.updateData(orderList)
+//        }
+        viewLifecycleOwner.lifecycleScope.launch{
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.orders.collect{ orderList ->
+                    orderAdapter.updateData(orderList)
+                }
+            }
         }
 
         // 3. 設定「新增訂單」按鈕

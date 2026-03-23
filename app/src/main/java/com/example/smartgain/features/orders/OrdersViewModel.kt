@@ -11,6 +11,8 @@ import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -20,8 +22,8 @@ class OrdersViewModel : ViewModel() {
     private val productRepository = ProductRepository()
     private val auth = FirebaseAuth.getInstance()
 
-    private val _orders = MutableLiveData<List<Order>>()
-    val orders: LiveData<List<Order>> = _orders
+    private val _orders = MutableStateFlow<List<Order>>(emptyList())
+    val orders: StateFlow<List<Order>> = _orders
 
     private val _lowStockCount = MutableLiveData<Int>()
     val lowStockCount: LiveData<Int> = _lowStockCount

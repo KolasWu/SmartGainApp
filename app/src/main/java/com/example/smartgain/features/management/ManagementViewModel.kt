@@ -6,14 +6,15 @@ import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository // 修正：改為導入 ProductRepository
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class ManagementViewModel : ViewModel() {
-    // 修正：這裡應該改用 ProductRepository 而非 OrderRepository
     private val repository = ProductRepository()
     private val auth = FirebaseAuth.getInstance()
 
-    private val _products = MutableLiveData<List<Product>>()
-    val products: LiveData<List<Product>> = _products
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products: StateFlow<List<Product>> = _products
 
     fun fetchProducts() {
         val myId = auth.currentUser?.uid ?: return

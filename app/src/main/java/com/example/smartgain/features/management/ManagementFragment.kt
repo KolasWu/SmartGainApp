@@ -6,11 +6,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.example.smartgain.R
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
 import com.example.smartgain.features.managementimport.ManagementViewModel
+import kotlinx.coroutines.launch
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -51,8 +55,16 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         binding.rvProducts.adapter = adapter
 
         //觀察資料庫商品狀態並更新adapter
-        viewModel.products.observe(viewLifecycleOwner) { list ->
-            adapter.updateData(list)
+//        viewModel.products.observe(viewLifecycleOwner) { list ->
+//            adapter.updateData(list)
+//        }
+        //callback 改成 coroutine寫法
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
+                viewModel.products.collect{ list ->
+                    adapter.updateData(list)
+                }
+            }
         }
 
         //取得商品
