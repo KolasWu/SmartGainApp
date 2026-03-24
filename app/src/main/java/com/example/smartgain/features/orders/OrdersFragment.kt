@@ -62,10 +62,6 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         )
         binding.rvOrders.adapter = orderAdapter
 
-        // 2. 觀察訂單 LiveData
-//        viewModel.orders.observe(viewLifecycleOwner) { orderList ->
-//            orderAdapter.updateData(orderList)
-//        }
         viewLifecycleOwner.lifecycleScope.launch{
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 viewModel.orders.collect{ orderList ->
@@ -154,20 +150,29 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         dialogBinding.rvSelectedItems.adapter = cartAdapter
 
         // B. 獲取商品清單並設定 Spinner
-        viewModel.products.observe(viewLifecycleOwner) { products ->
-            val productNames = products.map { it.name }
-            val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, productNames)
-            dialogBinding.spinnerProducts.adapter = spinnerAdapter
+        val products = viewModel.products.value
 
-            dialogBinding.spinnerProducts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
+        // 1. 提取產品名稱列表
+        val productNames = products.map { it.name }
+
+        // 2. 設定 Spinner Adapter
+        val spinnerAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            productNames
+        )
+        dialogBinding.spinnerProducts.adapter = spinnerAdapter
+
+        // 3. 設定選取監聽器
+        dialogBinding.spinnerProducts.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(p0: AdapterView<*>?, p1: View?, pos: Int, p3: Long) {
+                if (products.isNotEmpty()) {
                     selectedProduct = products[pos]
                     dialogBinding.tvCurrentStock.text = "目前庫存：${selectedProduct?.stock}"
                 }
-                override fun onNothingSelected(p0: AdapterView<*>?) {}
             }
+            override fun onNothingSelected(p0: AdapterView<*>?) {}
         }
-        viewModel.fetchProducts()
 
         // C. 「加入清單」按鈕邏輯
         dialogBinding.btnAddItem.setOnClickListener {

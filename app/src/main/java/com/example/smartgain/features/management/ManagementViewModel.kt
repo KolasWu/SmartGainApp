@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository // 修正：改為導入 ProductRepository
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -16,10 +17,12 @@ class ManagementViewModel : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products
 
+    private var productListener: ListenerRegistration? = null
+
     fun fetchProducts() {
         val myId = auth.currentUser?.uid ?: return
-        // 修正：現在由 ProductRepository 負責提供產品查詢
-        repository.getProductsQuery(myId).addSnapshotListener { snapshot, _ ->
+        productListener?.remove()
+        productListener = repository.getProductsQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
                 _products.value = it.toObjects(Product::class.java)
             }
@@ -56,5 +59,10 @@ class ManagementViewModel : ViewModel() {
             sellerId = currentUserId
         )
         repository.addProduct(product)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        productListener?.remove()
     }
 }
