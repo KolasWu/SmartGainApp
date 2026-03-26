@@ -9,6 +9,7 @@ import com.example.smartgain.data.OrderRepository
 import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
+import com.example.smartgain.data.TransactionRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,6 +21,7 @@ import java.util.Locale
 class OrdersViewModel : ViewModel() {
     private val orderRepository = OrderRepository()
     private val productRepository = ProductRepository()
+    private val transactionRepository = TransactionRepository()
     private val auth = FirebaseAuth.getInstance()
 
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
@@ -80,7 +82,7 @@ class OrdersViewModel : ViewModel() {
 
     fun deleteOrder(order: Order) {
         // 這裡直接傳入整筆訂單物件
-        productRepository.cancelOrderAndRestoreStock(order) { success ->
+        transactionRepository.cancelOrderAndRestoreStock(order) { success ->
             if (success) {
                 android.util.Log.d("OrdersViewModel", "訂單取消與庫存回補成功")
             } else {
@@ -144,7 +146,7 @@ class OrdersViewModel : ViewModel() {
 
         // 3. 【核心修正】：將 Batch 寫入移到迴圈外！一次性處理整張單與所有庫存
         // 注意：這裡不再呼叫 orderRepository.addOrder(newOrder)，因為 Batch 已經包辦了
-        productRepository.executeOrderBatch(newOrder, cartList) { success ->
+        transactionRepository.executeOrderBatch(newOrder, cartList) { success ->
             if (success) {
                 android.util.Log.d("OrdersViewModel", "Batch 訂單成立且庫存已自動扣除 (Atomic)")
             } else {

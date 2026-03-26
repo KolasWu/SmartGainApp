@@ -14,11 +14,13 @@ class OrderAdapter(
     private val onStatusClick: (Order) -> Unit
 ) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
 
+    //建立外殼
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
         val binding = ItemOrderBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return OrderViewHolder(binding)
     }
 
+    //把資料填進外殼
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
         val order = orders[position]
 
@@ -26,6 +28,7 @@ class OrderAdapter(
         holder.bind(order, onClick, onLongClick, onStatusClick)
     }
 
+    //告訴系統總共有幾格
     override fun getItemCount(): Int = orders.size
 
     fun updateData(newOrders: List<Order>) {
@@ -34,7 +37,6 @@ class OrderAdapter(
     }
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
-
         fun bind(
             order: Order,
             onClick: (Order) -> Unit,
