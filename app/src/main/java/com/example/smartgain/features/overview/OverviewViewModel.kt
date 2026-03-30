@@ -41,11 +41,12 @@ class OverviewViewModel : ViewModel() {
         // 監聽訂單以計算營收與待處理 (使用 orderRepository)
         orderListener = orderRepository.getOrdersQuery(myId).addSnapshotListener { snapshot, _ ->
             snapshot?.let {
+                // 把 Firestore 原始資料轉成 Order 物件清單
                 val orders = it.toObjects(Order::class.java)
                 // 只有「非刪除」且「非退回」的訂單才計入營收
-                _revenue.value = orders.filter { o ->
-                    o.status != OrderStatus.DELETED.name && o.status != OrderStatus.RETURNED.name
-                }.sumOf { o -> o.totalPrice }
+                _revenue.value = orders
+                    .filter { o -> o.status != OrderStatus.DELETED.name && o.status != OrderStatus.RETURNED.name }
+                    .sumOf { o -> o.totalPrice }
                 _pendingCount.value = orders.count{o -> o.status == OrderStatus.NEW.name }
             }
         }
