@@ -1,18 +1,20 @@
 package com.example.smartgain.features.orders
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smartgain.data.Order
 import com.example.smartgain.data.OrderStatus
 import com.example.smartgain.databinding.ItemOrderBinding
 
 class OrderAdapter(
-    private var orders: List<Order>,
     private val onLongClick: (Order) -> Unit,
     private val onClick: (Order) -> Unit,
     private val onStatusClick: (Order) -> Unit
-) : RecyclerView.Adapter<OrderAdapter.OrderViewHolder>() {
+) : ListAdapter<Order, OrderAdapter.OrderViewHolder>(OrderDiffCallback()) {
 
     //建立外殼
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): OrderViewHolder {
@@ -22,18 +24,10 @@ class OrderAdapter(
 
     //把資料填進外殼
     override fun onBindViewHolder(holder: OrderViewHolder, position: Int) {
-        val order = orders[position]
+        val order = getItem(position)
 
         // 呼叫 bind 處理資料與狀態
         holder.bind(order, onClick, onLongClick, onStatusClick)
-    }
-
-    //告訴系統總共有幾格
-    override fun getItemCount(): Int = orders.size
-
-    fun updateData(newOrders: List<Order>) {
-        this.orders = newOrders
-        notifyDataSetChanged()
     }
 
     class OrderViewHolder(private val binding: ItemOrderBinding) : RecyclerView.ViewHolder(binding.root) {
@@ -73,5 +67,22 @@ class OrderAdapter(
                 if (!isInactive) onStatusClick(order)
             }
         }
+    }
+}
+
+class OrderDiffCallback : DiffUtil.ItemCallback<Order>() {
+
+    override fun areItemsTheSame(oldItem: Order, newItem: Order): Boolean {
+        return oldItem.orderId == newItem.orderId
+    }
+
+    @SuppressLint("DiffUtilEquals")
+    override fun areContentsTheSame(oldItem: Order, newItem: Order): Boolean {
+        return oldItem.buyerName == newItem.buyerName &&
+                oldItem.totalPrice == newItem.totalPrice &&
+                oldItem.contact == newItem.contact &&
+                oldItem.status == newItem.status &&
+                oldItem.timestamp == newItem.timestamp &&
+                oldItem.items == newItem.items
     }
 }

@@ -35,7 +35,6 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
 
         // 1. 初始化主畫面的訂單列表
         orderAdapter = OrderAdapter(
-            emptyList(),
             onLongClick = { order ->
                 val currentStatus = OrderStatus.fromString(order.status)
                 val restrictedStatuses = setOf(
@@ -65,7 +64,7 @@ class OrdersFragment : Fragment(R.layout.fragment_orders) {
         viewLifecycleOwner.lifecycleScope.launch{
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 viewModel.orders.collect{ orderList ->
-                    orderAdapter.updateData(orderList)
+                    orderAdapter.submitList(orderList)
                 }
             }
         }
