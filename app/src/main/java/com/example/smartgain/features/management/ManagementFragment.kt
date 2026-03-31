@@ -49,20 +49,15 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         val binding = FragmentManagementBinding.bind(view)
 
         adapter = ProductAdapter(
-            emptyList(),
             onLongClick = { product -> showDeleteConfirmDialog(product) },
             onClick = { product -> showProductDialog(product) })
         binding.rvProducts.adapter = adapter
 
-        //觀察資料庫商品狀態並更新adapter
-//        viewModel.products.observe(viewLifecycleOwner) { list ->
-//            adapter.updateData(list)
-//        }
         //callback 改成 coroutine寫法
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED){
                 viewModel.products.collect{ list ->
-                    adapter.updateData(list)
+                    adapter.submitList(list)
                 }
             }
         }

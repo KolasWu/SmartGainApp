@@ -60,7 +60,6 @@ class OrdersViewModel : ViewModel() {
         productListener?.remove()
         productListener = productRepository.getProductsQuery(myId).addSnapshotListener { snapshot, error ->
         if (error != null) {
-            android.util.Log.e("OrdersViewModel", "監聽產品失敗", error)
             return@addSnapshotListener
         }
         snapshot?.let {
@@ -74,7 +73,6 @@ class OrdersViewModel : ViewModel() {
 
         // 如果訂單已經是 DELETED，就不允許透過這個管道修改
         if (currentOrder?.status == OrderStatus.DELETED.name) {
-            android.util.Log.w("OrdersViewModel", "無法修改已刪除訂單的狀態")
             return
         }
         orderRepository.updateOrderStatus(orderId, newStatus)

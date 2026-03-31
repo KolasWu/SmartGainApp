@@ -3,15 +3,16 @@ package com.example.smartgain.features.management
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.ItemProductBinding
 
 class ProductAdapter(
-    private var products: List<Product>,
     private val onLongClick: (Product) -> Unit, // 長按回調
     private val onClick: (Product) -> Unit // 點擊回調
-) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+) : ListAdapter<Product, ProductAdapter.ProductViewHolder>(ProductDiffCallback()){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
         val binding = ItemProductBinding.inflate(LayoutInflater.from(parent.context), parent, false)
@@ -19,37 +20,19 @@ class ProductAdapter(
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        val product = products[position]
-        holder.bind(product)
-
-        // 設定一般點擊 -> 觸發編輯
-        holder.itemView.setOnClickListener {
-            onClick(product)
-        }
-
-        // 設定長按監聽
-        holder.itemView.setOnLongClickListener {
-            onLongClick(product)
-            true
-        }
-    }
-
-    // 告訴系統總共有幾件貨物
-    override fun getItemCount() = products.size
-
-    @SuppressLint("NotifyDataSetChanged")
-    fun updateData(newList: List<Product>) {
-        products = newList
-        notifyDataSetChanged()
+        holder.bind(getItem(position), onLongClick, onClick)
     }
 
     class ProductViewHolder(private val binding: ItemProductBinding) :
         RecyclerView.ViewHolder(binding.root) {
         @SuppressLint("SetTextI18n")
-        fun bind(product: Product) {
+        fun bind(product: Product, onLongClick: (Product) -> Unit, onClick: (Product) -> Unit) {
 
             binding.tvProductName.text = product.name
             binding.tvProductPrice.text = "$${product.price}"
+
+            binding.root.setOnClickListener { onClick(product) }
+            binding.root.setOnLongClickListener { onLongClick(product); true }
 
             // 設定庫存文字與顏色警告
             binding.tvProductStock.text = "庫存：${product.stock}"
@@ -63,5 +46,18 @@ class ProductAdapter(
                 binding.tvProductStock.setTypeface(null, android.graphics.Typeface.NORMAL)
             }
         }
+    }
+}
+
+class ProductDiffCallback : DiffUtil.ItemCallback<Product>() {
+
+    override fun areItemsTheSame(oldItem: Product, newItem: Product): Boolean {
+        return oldItem.productId == newItem.productId
+    }
+
+    override fun areContentsTheSame(oldItem: Product, newItem: Product): Boolean {
+        return oldItem.name == newItem.name &&
+                oldItem.price == newItem.price &&
+                oldItem.stock == newItem.stock
     }
 }
