@@ -5,27 +5,32 @@
     android:layout_height="match_parent"
     tools:ignore="ExtraText">
 
-    <LinearLayout
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/nav_wrapper"
+        android:layout_width="match_parent"
+        android:layout_height="110dp"
+        android:layout_alignParentBottom="true"
+        app:cardCornerRadius="24dp"
+        app:cardElevation="8dp"
+        android:layout_marginBottom="-20dp">
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottom_navigation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:itemIconTint="@color/nav_item_color"
+            app:itemIconSize="22dp"
+            app:itemTextColor="@color/nav_item_color"
+            app:itemRippleColor="#201A73E8"
+            app:itemActiveIndicatorStyle="@style/Widget.App.BottomNavigationView.ActiveIndicator"            android:paddingBottom="24dp"
+            app:menu="@menu/bottom_nav_menu"
+            app:labelVisibilityMode="unlabeled"
+            app:elevation="0dp"/>
+    </com.google.android.material.card.MaterialCardView>
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:layout_above="@id/bottom_navigation">
-
-        <FrameLayout
-            android:id="@+id/nav_host_fragment"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-
-    </LinearLayout>
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottom_navigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"/>
+        android:layout_above="@id/nav_wrapper" />
 
 </RelativeLayout>
