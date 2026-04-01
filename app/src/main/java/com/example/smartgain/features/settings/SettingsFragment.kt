@@ -20,10 +20,8 @@ private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
 class SettingsFragment : Fragment() {
-    // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
-
     private var _binding: FragmentSettingsBinding? = null
     private val binding get() = _binding!!
 
@@ -46,17 +44,14 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // 初始化 Firebase Auth
         val auth = FirebaseAuth.getInstance()
         val currentUserId = auth.currentUser?.uid
 
-//        val myShopUrl = "https://smartgain.web.app/?shopId=TEST_SELLER_001"
-
         // 如果有 UID，就組合成 SmartGain 網址，否則給一個空字串或錯誤提示
         val myShopUrl = if (currentUserId != null) {
-            "https://smartgain.web.app/?shopId=$currentUserId"
+            "https://smartgain-aa826.web.app/?shopId=$currentUserId"
         } else {
-            ""
+            "https://smartgain-aa826.web.app"
         }
 
         // 點擊預覽賣場

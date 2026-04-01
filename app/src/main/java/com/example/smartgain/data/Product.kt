@@ -16,8 +16,10 @@ data class Product(
     var imageUrl: String = "",         // 商品圖片路徑
 
     @get:PropertyName("seller_id") @set:PropertyName("seller_id")
-    var sellerId: String = "" // 建議變數名改為 sellerId 但對應名稱為 seller_id
+    var sellerId: String = "", // 建議變數名改為 sellerId 但對應名稱為 seller_id
+
+    var description : String = ""      //商品描述
 ){
     // 必須要有一個無參數建構子，Firestore 才能轉換
-    constructor() : this("", "", 0, 0, "", "")
+    constructor() : this("", "", 0, 0, "", "", "")
 }

@@ -1,10 +1,13 @@
 package com.example.smartgain.features.management
 
+import android.net.Uri
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -19,13 +22,24 @@ import kotlinx.coroutines.launch
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 class ManagementFragment : Fragment(R.layout.fragment_management) {
-
-    //確保 ViewModel 存活在記憶體中，讓你的資料在旋轉後依然存在
     private val viewModel: ManagementViewModel by viewModels()
     private lateinit var adapter: ProductAdapter
     private var param1: String? = null
     private var param2: String? = null
 
+    private var selectedImageUri: Uri? = null
+    private var dialodImagePreview: ImageView? = null
+
+
+    private val pickImageLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.GetContent()) { uri ->
+                uri?.let { it->
+                    selectedImageUri = it
+                    // 預覽圖 UI
+                    dialodImagePreview?.setImageURI(it)
+                }
+    }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
@@ -61,10 +75,8 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
                 }
             }
         }
-
         //取得商品
         viewModel.fetchProducts()
-
         //新增商品按鈕
         binding.fabAddProduct.setOnClickListener {
             showProductDialog()
@@ -86,11 +98,19 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
         val dialogBinding = DialogAddProductBinding.inflate(layoutInflater)
         val isEdit = product != null
 
+        dialodImagePreview = dialogBinding.imagePreview
+
+        dialogBinding.btnSelectImage.setOnClickListener {
+            pickImageLauncher.launch("image/*")
+        }
+
+
         // 如果是編輯模式，先預填資料
         if (isEdit) {
             dialogBinding.etName.setText(product?.name)
             dialogBinding.etPrice.setText(product?.price.toString())
             dialogBinding.etStock.setText(product?.stock.toString())
+            dialogBinding.etDescription.setText(product?.description)
         }
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -100,15 +120,34 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
                 val name = dialogBinding.etName.text.toString()
                 val price = dialogBinding.etPrice.text.toString().toIntOrNull() ?: 0
                 val stock = dialogBinding.etStock.text.toString().toIntOrNull() ?: 0
+                val description = dialogBinding.etDescription.text.toString()
 
-                if (name.isNotEmpty()) {
+                // name 是空的就直接離開，不繼續
+                if (name.isEmpty()) return@setPositiveButton
+
+                val uri = selectedImageUri
+
+                if (uri == null) {
+                    // 沒有選圖：直接存，imageUrl 給空字串
                     if (isEdit) {
-                        // 呼叫更新
-                        viewModel.updateProduct(product!!.productId, name, price, stock)
+                        viewModel.updateProduct(product!!.productId, name, price, stock, "", description)
                     } else {
-                        // 呼叫新增
-                        viewModel.addProduct(name, price, stock)
+                        viewModel.addProduct(name, price, stock, "", description)
                     }
+                } else {
+                    // 有選圖：先上傳，拿到 URL 再存
+                    viewModel.uploadProductImage(uri, name,
+                        onSuccess = { imageUrl ->
+                            if (isEdit) {
+                                viewModel.updateProduct(product!!.productId, name, price, stock, imageUrl, description)
+                            } else {
+                                viewModel.addProduct(name, price, stock, imageUrl, description)
+                            }
+                        },
+                        onFailure = {
+                            // 之後補上失敗提示
+                        }
+                    )
                 }
             }
             .setNegativeButton("取消", null)
