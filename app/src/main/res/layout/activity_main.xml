@@ -21,7 +21,8 @@
             app:itemIconSize="22dp"
             app:itemTextColor="@color/nav_item_color"
             app:itemRippleColor="#201A73E8"
-            app:itemActiveIndicatorStyle="@style/Widget.App.BottomNavigationView.ActiveIndicator"            android:paddingBottom="24dp"
+            app:itemActiveIndicatorStyle="@style/Widget.App.BottomNavigationView.ActiveIndicator"
+            android:paddingBottom="24dp"
             app:menu="@menu/bottom_nav_menu"
             app:labelVisibilityMode="unlabeled"
             app:elevation="0dp"/>
