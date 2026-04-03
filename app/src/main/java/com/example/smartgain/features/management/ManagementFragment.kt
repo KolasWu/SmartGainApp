@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.bumptech.glide.Glide
 import com.example.smartgain.R
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
@@ -34,10 +35,14 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
     private val pickImageLauncher =
         registerForActivityResult(
             ActivityResultContracts.GetContent()) { uri ->
-                uri?.let { it->
+            android.util.Log.d("SmartGain", "選到圖片了：$uri")
+            uri?.let { it->
                     selectedImageUri = it
-                    // 預覽圖 UI
-                    dialodImagePreview?.setImageURI(it)
+                    dialodImagePreview?.let{ preview ->
+                        Glide.with(this)
+                            .load(it)                          //本機uri
+                            .into(preview)
+                    }
                 }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -111,6 +116,14 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
             dialogBinding.etPrice.setText(product?.price.toString())
             dialogBinding.etStock.setText(product?.stock.toString())
             dialogBinding.etDescription.setText(product?.description)
+            //載入現有圖片
+            if(!product?.imageUrl.isNullOrEmpty()){
+                dialodImagePreview?.let{ preview ->
+                    Glide.with(this)
+                        .load(product?.imageUrl)
+                        .into(preview)
+                }
+            }
         }
 
         androidx.appcompat.app.AlertDialog.Builder(requireContext())
@@ -130,7 +143,7 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
                 if (uri == null) {
                     // 沒有選圖：直接存，imageUrl 給空字串
                     if (isEdit) {
-                        viewModel.updateProduct(product!!.productId, name, price, stock, "", description)
+                        viewModel.updateProduct(product!!.productId, name, price, stock, product.imageUrl, description)
                     } else {
                         viewModel.addProduct(name, price, stock, "", description)
                     }

@@ -1,11 +1,13 @@
 package com.example.smartgain.features.management
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.ItemProductBinding
 
@@ -21,6 +23,8 @@ class ProductAdapter(
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
         holder.bind(getItem(position), onLongClick, onClick)
+        val currentProduct = getItem(position) // 先取得當前物件
+        Log.d("GlideCheck", "商品: ${currentProduct.name}, 網址: ${currentProduct.imageUrl}")
     }
 
     class ProductViewHolder(private val binding: ItemProductBinding) :
@@ -45,6 +49,13 @@ class ProductAdapter(
                 binding.tvProductStock.setTextColor(android.graphics.Color.GRAY)
                 binding.tvProductStock.setTypeface(null, android.graphics.Typeface.NORMAL)
             }
+
+            Glide.with(binding.root)
+                .load(product.imageUrl.ifEmpty { null })
+                .placeholder(android.R.drawable.ic_menu_gallery)
+                .error(android.R.drawable.ic_menu_gallery)
+                .centerCrop()
+                .into(binding.ivProductIcon)
         }
     }
 }
@@ -58,6 +69,8 @@ class ProductDiffCallback : DiffUtil.ItemCallback<Product>() {
     override fun areContentsTheSame(oldItem: Product, newItem: Product): Boolean {
         return oldItem.name == newItem.name &&
                 oldItem.price == newItem.price &&
-                oldItem.stock == newItem.stock
+                oldItem.stock == newItem.stock &&
+                oldItem.imageUrl == newItem.imageUrl &&
+                oldItem.sellerId == newItem.sellerId
     }
 }

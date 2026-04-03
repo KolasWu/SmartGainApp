@@ -13,6 +13,7 @@ data class Product(
     var stock: Int = 0,                // 庫存數量
 
     @get:PropertyName("image_url") @set:PropertyName("image_url")
+    @field:PropertyName("image_url")
     var imageUrl: String = "",         // 商品圖片路徑
 
     @get:PropertyName("seller_id") @set:PropertyName("seller_id")
