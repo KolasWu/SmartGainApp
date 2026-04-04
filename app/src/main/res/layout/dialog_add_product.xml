@@ -64,8 +64,7 @@
         app:strokeColor="#E0E0E0"
         app:cornerSize="12dp"
         android:src="@android:drawable/ic_menu_camera"
-        android:contentDescription="點擊上傳商品圖片"
-        android:tint="#BDC1C6" />
+        android:contentDescription="點擊上傳商品圖片"/>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSelectImage"

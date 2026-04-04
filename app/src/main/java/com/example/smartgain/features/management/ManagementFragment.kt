@@ -35,7 +35,6 @@ class ManagementFragment : Fragment(R.layout.fragment_management) {
     private val pickImageLauncher =
         registerForActivityResult(
             ActivityResultContracts.GetContent()) { uri ->
-            android.util.Log.d("SmartGain", "選到圖片了：$uri")
             uri?.let { it->
                     selectedImageUri = it
                     dialodImagePreview?.let{ preview ->
