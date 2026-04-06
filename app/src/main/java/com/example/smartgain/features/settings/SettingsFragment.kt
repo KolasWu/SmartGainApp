@@ -15,11 +15,17 @@ import android.widget.Toast
 import com.example.smartgain.MainActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.auth
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
 
+@AndroidEntryPoint
 class SettingsFragment : Fragment() {
+
+    @Inject
+    lateinit var auth: FirebaseAuth
     private var param1: String? = null
     private var param2: String? = null
     private var _binding: FragmentSettingsBinding? = null
@@ -44,7 +50,6 @@ class SettingsFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val auth = FirebaseAuth.getInstance()
         val currentUserId = auth.currentUser?.uid
 
         // 如果有 UID，就組合成 SmartGain 網址，否則給一個空字串或錯誤提示

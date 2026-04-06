@@ -2,10 +2,11 @@ package com.example.smartgain.data
 
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
+import javax.inject.Inject
 
-class TransactionRepository {
-    private val db = FirebaseFirestore.getInstance()
-
+class TransactionRepository @Inject constructor(
+    private val db : FirebaseFirestore
+) {
     // 從 ProductRepository 搬來
     fun executeOrderBatch(order: Order, cartList: List<CartItem>, onComplete: (Boolean) -> Unit) {
         val batch = db.batch()

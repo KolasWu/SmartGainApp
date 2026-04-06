@@ -12,18 +12,21 @@ import com.example.smartgain.data.ProductRepository
 import com.example.smartgain.data.TransactionRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import javax.inject.Inject
 
-class OrdersViewModel : ViewModel() {
-    private val orderRepository = OrderRepository()
-    private val productRepository = ProductRepository()
-    private val transactionRepository = TransactionRepository()
-    private val auth = FirebaseAuth.getInstance()
-
+@HiltViewModel
+class OrdersViewModel @Inject constructor (
+    private val auth: FirebaseAuth,
+    private val orderRepository: OrderRepository,
+    private val productRepository: ProductRepository,
+    private val transactionRepository: TransactionRepository
+): ViewModel() {
     private val _orders = MutableStateFlow<List<Order>>(emptyList())
     val orders: StateFlow<List<Order>> = _orders
 

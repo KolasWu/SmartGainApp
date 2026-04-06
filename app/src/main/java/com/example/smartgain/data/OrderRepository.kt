@@ -3,13 +3,11 @@ package com.example.smartgain.data
 import android.util.Log
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import javax.inject.Inject
 
-class OrderRepository {
-//Repository (搬運工)：負責跟 Firebase 講話。它不關心畫面要長怎樣，只負責提供一個 Query（查詢指令）給別人。
-
-    //檢查是否有連線實例，沒有就建立
-    private val db = FirebaseFirestore.getInstance()
-
+class OrderRepository @Inject constructor(
+    private val db : FirebaseFirestore
+) {
     // 取得所有訂單，並按時間排序
     fun getOrdersQuery(sellerId: String): Query = db
         .collection("orders")

@@ -10,10 +10,13 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import com.example.smartgain.databinding.FragmentOverviewBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
+
+@AndroidEntryPoint
 class OverviewFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null

@@ -20,8 +20,10 @@ import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogManualOrderBinding
 import com.example.smartgain.databinding.DialogOrderDetailsBinding
 import com.example.smartgain.databinding.FragmentOrdersBinding
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
+@AndroidEntryPoint
 class OrdersFragment : Fragment(R.layout.fragment_orders) {
     private val viewModel: OrdersViewModel by viewModels()
     private lateinit var orderAdapter: OrderAdapter

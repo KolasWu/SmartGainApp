@@ -15,7 +15,9 @@ import com.example.smartgain.features.overview.OverviewFragment
 import com.example.smartgain.features.settings.SettingsFragment
 import com.google.firebase.Firebase
 import com.google.firebase.auth.auth
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
 

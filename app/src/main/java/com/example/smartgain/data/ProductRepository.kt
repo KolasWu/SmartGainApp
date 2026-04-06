@@ -2,10 +2,11 @@ package com.example.smartgain.data
 
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
+import javax.inject.Inject
 
-class ProductRepository {
-    private val db = FirebaseFirestore.getInstance()
-
+class ProductRepository @Inject constructor(
+    private val db : FirebaseFirestore
+) {
     // 取得商品，並按名稱排序
     fun getProductsQuery(sellerId: String) = db
         .collection("products")

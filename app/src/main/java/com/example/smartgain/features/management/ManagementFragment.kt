@@ -18,10 +18,13 @@ import com.example.smartgain.data.Product
 import com.example.smartgain.databinding.DialogAddProductBinding
 import com.example.smartgain.databinding.FragmentManagementBinding
 import com.example.smartgain.features.managementimport.ManagementViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
+
+@AndroidEntryPoint
 class ManagementFragment : Fragment(R.layout.fragment_management) {
     private val viewModel: ManagementViewModel by viewModels()
     private lateinit var adapter: ProductAdapter

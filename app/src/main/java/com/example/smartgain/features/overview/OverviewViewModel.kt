@@ -8,15 +8,17 @@ import com.example.smartgain.data.Product
 import com.example.smartgain.data.ProductRepository
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class OverviewViewModel : ViewModel() {
-    // 拆分為兩個專門的 Repository
-    private val orderRepository = OrderRepository()
-    private val productRepository = ProductRepository()
-    private val auth = FirebaseAuth.getInstance()
-
+@HiltViewModel
+class OverviewViewModel @Inject constructor(
+    private val auth: FirebaseAuth,
+    private val orderRepository: OrderRepository,
+    private val productRepository: ProductRepository
+) : ViewModel() {
     //營收與訂單
     private val _revenue = MutableStateFlow<Int>(0)
     val revenue: StateFlow<Int> = _revenue

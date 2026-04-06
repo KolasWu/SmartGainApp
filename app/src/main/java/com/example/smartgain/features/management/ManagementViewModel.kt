@@ -7,13 +7,17 @@ import com.example.smartgain.data.ProductRepository // 修正：改為導入 Pro
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.storage.FirebaseStorage
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
 
-class ManagementViewModel : ViewModel() {
-    private val repository = ProductRepository()
-    private val auth = FirebaseAuth.getInstance()
-
+@HiltViewModel
+class ManagementViewModel @Inject constructor(
+    private val repository: ProductRepository,
+    private val auth: FirebaseAuth,
+    private val storage: FirebaseStorage
+) : ViewModel() {
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products: StateFlow<List<Product>> = _products
 
@@ -70,7 +74,6 @@ class ManagementViewModel : ViewModel() {
         onFailure: (Exception) -> Unit
     ){
         val myId = auth.currentUser?.uid ?: return
-        val storage = FirebaseStorage.getInstance()
 
         val name = productName.replace(" ", "_")
         val fileName = "${name}_${System.currentTimeMillis()}.jpg"
