@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.auth
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class LoginViewModel : ViewModel() {
+@HiltViewModel
+class LoginViewModel @Inject constructor() : ViewModel() {
     private val auth = Firebase.auth
     private val _loginResult = MutableLiveData<Result<FirebaseUser>>()
     val loginResult: LiveData<Result<FirebaseUser>> = _loginResult
