@@ -13,3 +13,6 @@
 .externalNativeBuild
 .cxx
 local.properties
+# 敏感設定檔
+google-services.json
+firebase-debug.log
