@@ -7,8 +7,11 @@ import javax.inject.Inject
 class TransactionRepository @Inject constructor(
     private val db : FirebaseFirestore
 ) {
-    // 從 ProductRepository 搬來
-    fun executeOrderBatch(order: Order, cartList: List<CartItem>, onComplete: (Boolean) -> Unit) {
+    fun executeOrderBatch(
+        order: Order,
+        cartList: List<CartItem>,
+        onComplete: (Boolean) -> Unit
+    ) {
         val batch = db.batch()
 
         val orderRef = if (order.orderId.isEmpty()) {

@@ -111,10 +111,10 @@ class OrdersViewModel @Inject constructor (
     }
 
     fun executeBatchOrder(
-        cartList: List<CartItem>,
-        buyerName: String,
-        prefix: String,
-        onWarning: (String) -> Unit
+        cartList: List<CartItem>,       //購物車
+        buyerName: String,              //買家名稱
+        prefix: String,                 //訂單前綴
+        onWarning: (String) -> Unit     //錯誤警告
     ) {
         if (cartList.isEmpty()) return
 
@@ -146,7 +146,6 @@ class OrdersViewModel @Inject constructor (
         }
 
         // 3. 【核心修正】：將 Batch 寫入移到迴圈外！一次性處理整張單與所有庫存
-        // 注意：這裡不再呼叫 orderRepository.addOrder(newOrder)，因為 Batch 已經包辦了
         transactionRepository.executeOrderBatch(newOrder, cartList) { success ->
             if (success) {
                 android.util.Log.d("OrdersViewModel", "Batch 訂單成立且庫存已自動扣除 (Atomic)")
